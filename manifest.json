@@ -12,9 +12,9 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://www.amazon.*/hz/wishlist/*"],
-      "css": ["css/detail.css"],
-      "js": ["lib/jquery.js", "js/"]
+      "matches": ["https://www.amazon.co.jp/*/wishlist/*"],
+      "css": [],
+      "js": ["lib/jquery.js", "js/wishlist.js"]
     }
   ]
 }

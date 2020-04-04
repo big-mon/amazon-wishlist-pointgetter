@@ -38,7 +38,8 @@ var RANKING = {
       .then(data => {
         var points = $(data)
           .find(
-            ".loyalty-points, #buyNewInner .a-unordered-list li:first-child"
+            "#pointsInsideBuyBox_feature_div .a-color-price" +
+              ", .a-unordered-list .selected .a-button-text .a-color-price:not(.a-size-base)"
           )
           .text()
           .replace(/\t/g, "")
@@ -47,11 +48,11 @@ var RANKING = {
 
         // ポイント情報タグを挿入
         $(item)
-          .find(".zg-item")
+          .find(".zg-item .p13n-sc-price")
           .append(
-            '<div class="add-point"><span class="a-size-small a-color-secondary a-color-price">' +
+            '<span class="add-point a-size-small" style="margin-left: .6rem;"><span class="a-color-price">' +
               points +
-              "</span></div>"
+              "</span></span>"
           );
       });
   }

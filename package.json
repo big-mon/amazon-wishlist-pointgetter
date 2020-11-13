@@ -1,0 +1,25 @@
+{
+  "name": "amazon-wishlist-pointgetter",
+  "description": "Google Chrome Extension for Amazon.co.jp",
+  "version": "1.0.0",
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/big-mon/amazon-wishlist-pointgetter"
+  },
+  "author": "BIG-MON <> (https://github.com/big-mon)",
+  "scripts": {
+    "lint": "eslint --ignore-path .gitignore ."
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^11.0.0",
+    "@commitlint/config-conventional": "^11.0.0",
+    "husky": "^4.3.0"
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    }
+  }
+}

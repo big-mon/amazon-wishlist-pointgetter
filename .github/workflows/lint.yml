@@ -1,0 +1,30 @@
+name: lint
+on: [push, pull_request]
+
+jobs:
+  commitlint:
+    runs-on: ubuntu-latest
+    steps:
+      # リポジトリをチェックアウトします
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      # Node.jsのセットアップを行います
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+      # CI高速化のためにキャッシュを使用します
+      - name: Fetch cache
+        uses: actions/cache@v1
+        with:
+          path: ~/.cache/yarn
+          key: ${{ runner.os }}-${{ github.ref }}-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ github.ref }}-
+            ${{ runner.os }}-
+      # 依存関係をインストールします
+      - name: Install dependencies
+        run: npm ci
+      # commitlintを行います
+      - name: Commitlint
+        run: npm run commitlint

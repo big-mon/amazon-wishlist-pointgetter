@@ -1,4 +1,4 @@
-var WISHLIST = {
+let WISHLIST = {
   target: HTMLElement,
   observer: MutationObserver,
 
@@ -12,7 +12,7 @@ var WISHLIST = {
 
   // 監視対象とするアイテムリストを設定
   setTarget: function() {
-    WISHLIST.target = document.getElementById("g-items");
+    WISHLIST.target = document.getElementById('g-items');
   },
 
   // DOM変更を検知した場合の処理
@@ -30,9 +30,9 @@ var WISHLIST = {
 
   // 対象リストに対してポイント情報を可視化
   searchAndDestroy: function() {
-    var list = WISHLIST.target;
+    let list = WISHLIST.target;
     $(list)
-      .children("li")
+      .children('li')
       .each(function(index, element) {
         WISHLIST.editItem(element);
       });
@@ -46,35 +46,31 @@ var WISHLIST = {
   // 対象の商品の情報を取得
   editItem: function(item) {
     // 商品のURLを取得
-    let domain = location.protocol + "//" + location.host;
-    let url =
-      domain +
-      $(item)
-        .find("h3.a-size-base .a-link-normal")
-        .attr("href");
+    const domain = location.protocol + '//' + location.host;
+    const url = domain + $(item).find('h3.a-size-base .a-link-normal').attr('href');
 
     // リンク先情報を取得
     fetch(url)
       .then(res => res.text())
       .then(data => {
-        var points = $(data)
+        let points = $(data)
           .find(
-            "#pointsInsideBuyBox_feature_div .a-color-price" +
-              ", .a-unordered-list .selected .a-button-text .a-color-price:not(.a-size-base)"
+            '#pointsInsideBuyBox_feature_div .a-color-price'
+            + ', .a-unordered-list .selected .a-button-text .a-color-price:not(.a-size-base)'
           )
           .text()
-          .replace(/\t/g, "")
-          .replace(/ /g, "")
-          .replace(/\r?\n/g, "");
+          .replace(/\t/g, '')
+          .replace(/ /g, '')
+          .replace(/\r?\n/g, '');
 
         // ポイント情報タグを挿入
         $(item)
-          .find(".price-section .a-price")
+          .find('.price-section .a-price')
           .append(
-            '<span class="add-point a-size-small" style="margin-left: .6rem;"><span class="a-text-bold a-color-price">' +
-              points +
-              "</span></span>"
+            '<span class="add-point a-size-small" style="margin-left: .6rem;"><span class="a-text-bold a-color-price">'
+              + points
+              + '</span></span>'
           );
       });
-  }
+  },
 };

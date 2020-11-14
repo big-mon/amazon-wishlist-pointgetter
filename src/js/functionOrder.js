@@ -3,7 +3,7 @@ $(document).ready(function() {
   var url = location.href;
 
   // [ウィッシュリスト]ページの場合
-  if (url.indexOf("wishlist") != -1) WISHLIST.start();
+  if (url.indexOf('wishlist') != -1) WISHLIST.start();
   // [ランキング]ページの場合
   else if (url.indexOf("digital-text") != -1) RANKING.start();
 });

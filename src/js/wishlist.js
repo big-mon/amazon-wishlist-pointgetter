@@ -7,7 +7,7 @@ let WISHLIST = {
     this.setTarget();
     this.searchAndDestroy();
     this.setObserver();
-    this.startObserv();
+    this.startObserve();
   },
 
   // 監視対象とするアイテムリストを設定
@@ -39,7 +39,7 @@ let WISHLIST = {
   },
 
   // DOM変更の監視を開始
-  startObserv: function() {
+  startObserve: function() {
     WISHLIST.observer.observe(WISHLIST.target, { childList: true });
   },
 

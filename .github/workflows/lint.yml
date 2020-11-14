@@ -10,21 +10,5 @@ jobs:
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      # Node.jsのセットアップを行います
-      - name: Setup Node.js
-        uses: actions/setup-node@v1
-      # CI高速化のためにキャッシュを使用します
-      - name: Fetch cache
-        uses: actions/cache@v1
-        with:
-          path: ~/.cache/yarn
-          key: ${{ runner.os }}-${{ github.ref }}-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ github.ref }}-
-            ${{ runner.os }}-
-      # 依存関係をインストールします
-      - name: Install dependencies
-        run: npm ci
       # commitlintを行います
-      - name: Commitlint
-        run: npm run commitlint
+      - uses: wagoid/commitlint-github-action@v2

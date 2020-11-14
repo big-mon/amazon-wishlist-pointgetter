@@ -10,23 +10,30 @@
   },
   "author": "BIG-MON <> (https://github.com/big-mon)",
   "scripts": {
-    "lint": "eslint --ignore-path .gitignore ."
+    "lint": "eslint . --ignore-path .gitignore --ignore-pattern lib/ commitlint.config.js"
   },
   "devDependencies": {
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
     "@commitlint/travis-cli": "^11.0.0",
     "eslint": "^7.13.0",
-    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jquery": "^1.5.1",
     "husky": "^4.3.0"
   },
-  "eslintConfig":{
-    "extends": [
-      "airbnb-base"
-    ]
+  "eslintConfig": {
+    "plugins": [
+      "jquery"
+    ],
+    "env": {
+      "browser": false,
+      "jquery": true,
+      "es6": true
+    }
   },
   "husky": {
     "hooks": {
+      "pre-commit": "yarn lint",
       "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
     }
   }

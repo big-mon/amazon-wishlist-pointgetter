@@ -34,13 +34,16 @@ let RANKING = {
       .then(data => {
         let points = $(data)
           .find(
-            '#pointsInsideBuyBox_feature_div .a-color-price'
-              + ', .a-unordered-list .selected .a-button-text .a-color-price:not(.a-size-base)'
+            '#addToCart #pointsInsideBuyBox_feature_div span.a-color-price' // Normal Item
+            + ', .loyalty-points .a-align-bottom' // Kindle Item
           )
           .text()
           .replace(/\t/g, '')
           .replace(/ /g, '')
           .replace(/\r?\n/g, '');
+
+          console.log(url);
+          console.log(points);
 
         // ポイント情報タグを挿入
         $(item)

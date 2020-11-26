@@ -56,7 +56,7 @@ let WISHLIST = {
         let points = $(data)
           .find(
             '#addToCart #pointsInsideBuyBox_feature_div span.a-color-price' // Normal Item
-            + ', #addToCart #buybox span.a-color-price' // Normal Item
+            + ', #addToCart #buybox span.a-color-price:not(.offer-price)' // Normal Item
             + ', .loyalty-points .a-align-bottom' // Kindle Item
           )
           .text()

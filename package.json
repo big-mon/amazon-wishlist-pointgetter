@@ -16,10 +16,10 @@
     "@commitlint/cli": "^11.0.0",
     "@commitlint/config-conventional": "^11.0.0",
     "@commitlint/travis-cli": "^11.0.0",
-    "eslint": "^7.13.0",
+    "eslint": "^7.15.0",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-jquery": "^1.5.1",
-    "husky": "^4.3.0"
+    "husky": "^4.5.0"
   },
   "eslintConfig": {
     "plugins": [

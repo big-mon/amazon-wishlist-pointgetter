@@ -13,7 +13,7 @@
 ### Step 1: Start develop
 
 ```sh
-git clone git@gitahub.com:big-mon/amazon-wishlist-pointgetter
+git clone git@github.com:big-mon/amazon-wishlist-pointgetter
 
 cd amazon-wishlist-pointgetter
 

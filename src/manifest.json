@@ -14,7 +14,7 @@
     {
       "matches": [
         "https://www.amazon.co.jp/*/wishlist/*",
-        "https://www.amazon.co.jp/gp/*/digital-text/*"
+        "https://www.amazon.co.jp/portal-migration/bestsellers/digital-text*"
       ],
       "css": [],
       "js": [

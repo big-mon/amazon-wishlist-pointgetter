@@ -17,7 +17,7 @@ let RANKING = {
     let list = RANKING.target;
     $(list)
       .children("li")
-      .each(function (index, element) {
+      .each(function (_index, element) {
         RANKING.editItem(element);
       });
   },
@@ -45,7 +45,7 @@ let RANKING = {
 
         // ポイント情報タグを挿入
         $(item)
-          .find(".zg-item .p13n-sc-price")
+          .find(".zg-item .p13n-sc-price:last-child")
           .append(
             '<span class="add-point a-size-small" style="margin-left: .6rem;"><span class="a-color-price">' +
               escapeHtml(points) +

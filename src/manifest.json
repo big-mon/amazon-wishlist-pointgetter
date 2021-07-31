@@ -1,8 +1,8 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Devola: Amazon Wishlist Point Visualization",
   "short_name": "Devola",
-  "version": "1.1.6",
+  "version": "1.2.0",
   "description": "__MSG_appDesc__",
   "default_locale": "ja",
   "icons": {
@@ -14,8 +14,10 @@
     {
       "matches": [
         "https://www.amazon.co.jp/*/wishlist/*",
-        "https://www.amazon.co.jp/portal-migration/bestsellers/digital-text*",
-        "https://www.amazon.co.jp/gp/bestsellers/*"
+        "https://www.amazon.co.jp/portal-migration/bestsellers/*",
+        "https://www.amazon.co.jp/gp/bestsellers/*",
+        "https://www.amazon.co.jp/gp/new-releases/*",
+        "https://www.amazon.co.jp/gp/movers-and-shakers/*"
       ],
       "css": [],
       "js": [

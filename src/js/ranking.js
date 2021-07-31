@@ -17,7 +17,7 @@ let RANKING = {
     let list = RANKING.target;
     $(list)
       .children("li")
-      .each(function (index, element) {
+      .each(function (_index, element) {
         RANKING.editItem(element);
       });
   },

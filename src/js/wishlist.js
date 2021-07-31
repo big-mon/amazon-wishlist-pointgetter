@@ -33,7 +33,7 @@ let WISHLIST = {
     let list = WISHLIST.target;
     $(list)
       .children("li")
-      .each(function (index, element) {
+      .each(function (_index, element) {
         WISHLIST.editItem(element);
       });
   },

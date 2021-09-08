@@ -23,5 +23,7 @@ yarn
 ### Step 2: Deploy
 
 ```sh
-git archive HEAD:src --output=../amazon-wishlist-pointgetter.zip
+yarn build
 ```
+
+deploy to `/dist`

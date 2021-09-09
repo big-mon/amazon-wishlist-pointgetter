@@ -10,7 +10,6 @@
     "build": "webpack.cmd --mode production"
   },
   "devDependencies": {
-    "@types/chrome": "^0.0.157",
     "@types/copy-webpack-plugin": "^8.0.1",
     "@types/webpack": "^5.28.0",
     "copy-webpack-plugin": "^9.0.1",

@@ -5,9 +5,6 @@ import CopyWebpackPlugin from "copy-webpack-plugin";
 const config: webpack.Configuration = {
   entry: {
     index: path.join(__dirname, "src/index.ts"),
-    util: path.join(__dirname, "src/util.ts"),
-    ranking: path.join(__dirname, "src/ranking.ts"),
-    wishlist: path.join(__dirname, "src/wishlist.ts"),
   },
   output: {
     path: path.join(__dirname, "dist/js"),

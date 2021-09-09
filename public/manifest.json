@@ -20,7 +20,7 @@
         "https://www.amazon.co.jp/gp/movers-and-shakers/*"
       ],
       "css": [],
-      "js": ["js/base.js", "js/util.js", "js/ranking.js", "js/wishlist.js"],
+      "js": ["js/index.js", "js/util.js", "js/ranking.js", "js/wishlist.js"],
       "run_at": "document_end"
     }
   ]

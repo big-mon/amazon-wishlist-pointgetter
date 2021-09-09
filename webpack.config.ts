@@ -4,7 +4,7 @@ import CopyWebpackPlugin from "copy-webpack-plugin";
 
 const config: webpack.Configuration = {
   entry: {
-    base: path.join(__dirname, "src/base.ts"),
+    index: path.join(__dirname, "src/index.ts"),
     util: path.join(__dirname, "src/util.ts"),
     ranking: path.join(__dirname, "src/ranking.ts"),
     wishlist: path.join(__dirname, "src/wishlist.ts"),

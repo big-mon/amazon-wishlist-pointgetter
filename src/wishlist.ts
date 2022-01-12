@@ -20,7 +20,9 @@ export const doWishlist = () => {
 const editItem = async (item: HTMLElement) => {
   // 商品のURLを取得
   const selectorUrl = "h2.a-size-base .a-link-normal";
-  const url = domain + item.querySelector(selectorUrl)?.getAttribute("href");
+  const href = item.querySelector(selectorUrl)?.getAttribute("href");
+  if (!href) return;
+  const url = domain + href;
 
   // 商品の取得ポイントを取得
   const result = await fetchPoints(url);

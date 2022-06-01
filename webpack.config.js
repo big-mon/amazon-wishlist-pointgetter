@@ -1,14 +1,13 @@
-const path = require("path");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 
 module.exports = {
   mode: "production",
   // エントリーポイントとなるファイル
   entry: {
-    index: path.join(__dirname, "src/index.ts"),
+    index: `${__dirname}/src/index.ts`,
   },
   output: {
-    path: path.join(__dirname, "dist/js"),
+    path: `${__dirname}/dist/js`,
     filename: "[name].js",
     clean: true,
   },

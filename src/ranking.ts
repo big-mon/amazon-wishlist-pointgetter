@@ -13,7 +13,10 @@ export const doRanking = () => {
   });
 };
 
-/** 商品ブロックに取得ポイントを追記 */
+/** 商品ブロックに取得ポイントを追記
+ * @param item 商品HTML
+ * @param domain basePath (ex. http://example.com)
+ */
 const editItem = async (item: HTMLElement, domain: string) => {
   // 商品のURLを取得
   const selectorUrl = ".zg-item .a-link-normal";

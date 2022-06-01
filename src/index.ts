@@ -5,8 +5,9 @@ import { doRanking } from "./ranking";
 const start = () => {
   let url = location.href;
 
-  // [ウィッシュリスト]ページの場合
+  // 表示中のページ種別を判定
   if (url.indexOf("wishlist") != -1) {
+    // [ウィッシュリスト]ページの場合
     doWishlist();
   } else {
     doRanking();

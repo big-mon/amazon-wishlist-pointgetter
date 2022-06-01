@@ -5,7 +5,9 @@ export const fetchPoints = async (url: string) => {
   return parsePoints(resData);
 };
 
-/** 商品ページからポイント部分を取得 */
+/** 商品ページからポイント部分を取得
+ * @param data 商品ページHTML
+ */
 const parsePoints = (data: string) => {
   // セレクター
   const normalItem1 =
@@ -23,7 +25,9 @@ const parsePoints = (data: string) => {
   return escapeHtml(trimText(dom.textContent));
 };
 
-/** 文字列エスケープ */
+/** 文字列エスケープ
+ * @param unsafe 無害化する文字列
+ */
 const escapeHtml = (unsafe: string) =>
   unsafe
     .replace(/&/g, "&amp;")
@@ -32,6 +36,8 @@ const escapeHtml = (unsafe: string) =>
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 
-/** 文字列トリム */
+/** 文字列トリム
+ * @param text トリムを行う文字列
+ */
 const trimText = (text: string) =>
   text.replace(/\t/g, "").replace(/ /g, "").replace(/\r?\n/g, "");

@@ -16,7 +16,9 @@ export const doWishlist = () => {
   observer.observe(wrapper, { childList: true });
 };
 
-/** 商品ブロックに取得ポイントを追記 */
+/** 商品ブロックに取得ポイントを追記
+ * @param item 商品HTML
+ */
 const editItem = async (item: HTMLElement) => {
   // 商品のURLを取得
   const selectorUrl = "h2.a-size-base .a-link-normal";

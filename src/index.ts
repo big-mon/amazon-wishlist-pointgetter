@@ -1,5 +1,4 @@
 import { doWishlist } from "./wishlist";
-import { doRanking } from "./ranking";
 
 /** 処理全体のスターター */
 const start = () => {
@@ -9,8 +8,6 @@ const start = () => {
   if (url.indexOf("wishlist") != -1) {
     // [ウィッシュリスト]ページの場合
     doWishlist();
-  } else {
-    doRanking();
   }
 };
 

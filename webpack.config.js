@@ -1,8 +1,9 @@
-import webpack from "webpack";
-import path from "path";
-import CopyWebpackPlugin from "copy-webpack-plugin";
+const path = require("path");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
 
-const config: webpack.Configuration = {
+module.exports = {
+  mode: "production",
+  // エントリーポイントとなるファイル
   entry: {
     index: path.join(__dirname, "src/index.ts"),
   },
@@ -21,6 +22,7 @@ const config: webpack.Configuration = {
     ],
   },
   resolve: {
+    // importにて自動解決させる拡張子
     extensions: [".ts", ".js"],
   },
   plugins: [
@@ -29,5 +31,3 @@ const config: webpack.Configuration = {
     }),
   ],
 };
-
-export default config;

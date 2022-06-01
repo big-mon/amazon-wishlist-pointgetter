@@ -24,6 +24,10 @@ yarn
 
 ```sh
 yarn build
+
+or
+
+yarn watch
 ```
 
 deploy to `/dist`

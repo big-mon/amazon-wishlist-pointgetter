@@ -14,7 +14,7 @@ const parsePoints = (data: string) => {
     "#addToCart #pointsInsideBuyBox_feature_div span.a-color-price";
   const normalItem2 =
     "#addToCart #buyBoxInner span.a-color-price:not(.offer-price)";
-  const kindleItem = ".loyalty-points .a-align-bottom";
+  const kindleItem = ".ebooks-aip-points-label .a-color-price";
 
   // 取得ポイント部分のDOM
   const dom = new DOMParser()

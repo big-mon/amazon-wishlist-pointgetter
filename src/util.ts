@@ -16,12 +16,14 @@ const parsePoints = (data: string) => {
     "#addToCart #buyBoxInner span.a-color-price:not(.offer-price)";
   const kindleItem1 = ".loyalty-points .a-align-bottom";
   const kindleItem2 = ".ebooks-aip-points-label .a-color-price";
+  const kindleItem3 =
+    "#Ebooks-desktop-KINDLE_ALC-prices-loyaltyPoints .a-color-price";
 
   // 取得ポイント部分のDOM
   const dom = new DOMParser()
     .parseFromString(data, "text/html")
     .querySelector(
-      `${normalItem1},${normalItem2},${kindleItem1},${kindleItem2}`
+      `${normalItem1},${normalItem2},${kindleItem1},${kindleItem2},${kindleItem3}`
     );
   if (!dom || !dom.textContent) return "";
 

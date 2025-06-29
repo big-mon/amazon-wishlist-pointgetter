@@ -11,7 +11,9 @@
     "dev": "webpack --mode=development",
     "watch": "webpack --watch --mode=development",
     "clean": "rm -rf dist",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "deploy": "node scripts/deploy.js",
+    "zip": "cd dist && zip -r ../extension.zip ."
   },
   "devDependencies": {
     "copy-webpack-plugin": "^13.0.0",

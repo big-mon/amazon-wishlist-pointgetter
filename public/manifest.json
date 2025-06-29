@@ -18,11 +18,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://www.amazon.co.jp/*/wishlist/*",
-        "https://www.amazon.co.jp/portal-migration/bestsellers/*",
-        "https://www.amazon.co.jp/gp/bestsellers/*",
-        "https://www.amazon.co.jp/gp/new-releases/*",
-        "https://www.amazon.co.jp/gp/movers-and-shakers/*"
+        "https://www.amazon.co.jp/*/wishlist/*"
       ],
       "js": [
         "js/index.js"

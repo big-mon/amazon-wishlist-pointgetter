@@ -1,7 +1,9 @@
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 module.exports = {
-  mode: "production",
+  mode: process.env.NODE_ENV || "production",
   // エントリーポイントとなるファイル
   entry: {
     index: `${__dirname}/src/index.ts`,
@@ -11,12 +13,18 @@ module.exports = {
     filename: "[name].js",
     clean: true,
   },
+  devtool: isDevelopment ? 'eval-cheap-module-source-map' : 'source-map',
   module: {
     rules: [
       {
-        test: /.ts$/,
-        use: "ts-loader",
-        exclude: "/node_modules/",
+        test: /\.ts$/,
+        use: {
+          loader: "ts-loader",
+          options: {
+            transpileOnly: true,
+          },
+        },
+        exclude: /node_modules/,
       },
     ],
   },
@@ -29,4 +37,7 @@ module.exports = {
       patterns: [{ from: "public", to: "../" }],
     }),
   ],
+  optimization: {
+    minimize: !isDevelopment,
+  },
 };

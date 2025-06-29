@@ -10,9 +10,14 @@ This is a Chrome extension called "Devola" that enhances Amazon.co.jp wishlist p
 
 ## Development Commands
 
-- `yarn` - Install dependencies
-- `yarn build` - Build extension for production (outputs to `/dist`)
-- `yarn watch` - Build in watch mode for development
+- `pnpm install` - Install dependencies (faster than yarn/npm)
+- `pnpm build` - Build extension for production (outputs to `/dist`)
+- `pnpm dev` - Build extension for development with optimizations disabled
+- `pnpm watch` - Build in watch mode for development with hot reloading
+- `pnpm clean` - Remove the `/dist` directory
+- `pnpm type-check` - Run TypeScript type checking without compilation
+
+**Note**: This project uses pnpm for faster installs and better disk space efficiency.
 
 ## Architecture
 
@@ -41,10 +46,12 @@ Uses MutationObserver to detect when new wishlist items are dynamically added to
 
 ## Build System
 
-- Uses Webpack with TypeScript compilation
+- Uses Webpack 5 with TypeScript compilation
 - CopyWebpackPlugin copies `public/` folder contents to `dist/`
-- Manifest v3 Chrome extension format
-- Target: ES2020, strict TypeScript configuration
+- Manifest v3 Chrome extension format (compatible until 2025+)
+- Target: ES2022 with modern TypeScript configuration
+- Development mode includes source maps and faster compilation
+- Production mode includes minification and optimization
 
 ## Extension Structure
 

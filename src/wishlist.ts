@@ -46,7 +46,7 @@ const editItem = async (item: HTMLElement) => {
 const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
     // 追加されたノードを対象にループ
-    for (let node of mutation.addedNodes) {
+    for (let node of Array.from(mutation.addedNodes)) {
       if (!(node instanceof HTMLElement)) continue;
       if (!node.matches("li")) continue;
 

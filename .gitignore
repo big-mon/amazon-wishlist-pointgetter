@@ -115,3 +115,7 @@ dist
 # End of https://www.toptal.com/developers/gitignore/api/node
 
 # my custom
+
+# pnpm
+pnpm-lock.yaml
+.pnpm-store/

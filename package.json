@@ -1,19 +1,20 @@
 {
   "name": "amazon-wishlist-pointgetter",
   "description": "Google Chrome Extension for Amazon.co.jp",
-  "version": "1.0.0",
+  "version": "1.5.0",
   "private": true,
   "license": "MIT",
   "repository": "https://github.com/big-mon/amazon-wishlist-pointgetter",
   "author": "BIG-MON <> (https://github.com/big-mon)",
   "scripts": {
-    "build": "webpack --mode=production",
-    "dev": "webpack --mode=development",
+    "build": "npm run sync-version && webpack --mode=production",
+    "dev": "npm run sync-version && webpack --mode=development",
     "watch": "webpack --watch --mode=development",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit",
-    "deploy": "node scripts/deploy.js",
-    "zip": "cd dist && zip -r ../extension.zip ."
+    "deploy": "npm run sync-version && node scripts/deploy.js",
+    "zip": "cd dist && zip -r ../extension.zip .",
+    "sync-version": "node scripts/sync-version.js"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^13.0.0",

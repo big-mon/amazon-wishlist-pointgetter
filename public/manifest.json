@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Devola: Amazon Wishlist Point Visualization",
   "short_name": "Devola",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "__MSG_appDesc__",
   "default_locale": "ja",
   "icons": {

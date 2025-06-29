@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# バージョン同期
+echo "🔄 Syncing version between package.json and manifest.json..."
+node scripts/sync-version.js
+
+# バージョン同期で変更があった場合はステージに追加
+git add public/manifest.json

@@ -2,6 +2,16 @@ import { fetchPoints, processedItems } from "./util";
 
 const domain = location.protocol + "//" + location.host;
 
+/**
+ * Devola Chrome Extension - Point Display System
+ * 
+ * All elements created by this extension are marked with:
+ * - CSS classes: devola-extension-element, devola-points-*
+ * - Data attributes: data-devola-element, data-devola-version
+ * 
+ * This allows easy identification and potential cleanup of extension-added elements.
+ */
+
 /** Intersection Observer for lazy loading */
 let intersectionObserver: IntersectionObserver | null = null;
 
@@ -122,27 +132,32 @@ const editItem = async (item: HTMLElement) => {
 /** ローディングスピナーを作成 */
 const createLoadingSpinner = (): HTMLElement => {
   const spinner = document.createElement('span');
-  spinner.className = 'add-point-loading a-size-small';
+  spinner.className = 'devola-points-loading devola-extension-element add-point-loading a-size-small';
   spinner.style.cssText = 'margin-left: .6rem; color: #666;';
   spinner.textContent = '⏳';
+  spinner.setAttribute('data-devola-element', 'loading');
   return spinner;
 };
 
 /** ポイント表示要素を作成 */
 const createPointDisplay = (points: string): HTMLElement => {
   const pointElement = document.createElement('span');
-  pointElement.className = 'add-point a-size-small';
+  pointElement.className = 'devola-points-display devola-extension-element add-point a-size-small';
   pointElement.style.cssText = 'margin-left: .6rem;';
-  pointElement.innerHTML = `<span class="a-color-price">${points}</span>`;
+  pointElement.innerHTML = `<span class="a-color-price devola-points-text">${points}</span>`;
+  pointElement.setAttribute('data-devola-element', 'points');
+  pointElement.setAttribute('data-devola-version', '1.5.0');
   return pointElement;
 };
 
 /** エラー表示要素を作成 */
 const createErrorDisplay = (): HTMLElement => {
   const errorElement = document.createElement('span');
-  errorElement.className = 'add-point-error a-size-small';
+  errorElement.className = 'devola-points-error devola-extension-element add-point-error a-size-small';
   errorElement.style.cssText = 'margin-left: .6rem; color: #888; font-size: 11px;';
   errorElement.textContent = '—';
+  errorElement.setAttribute('data-devola-element', 'error');
+  errorElement.setAttribute('data-devola-status', 'fetch-failed');
   return errorElement;
 };
 

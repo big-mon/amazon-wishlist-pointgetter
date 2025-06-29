@@ -101,7 +101,7 @@ export CHROME_CLIENT_ID="your_client_id"
 export CHROME_CLIENT_SECRET="your_client_secret"
 export CHROME_REFRESH_TOKEN="your_refresh_token"
 
-pnpm deploy
+pnpm deploy-chrome
 ```
 
 ## 注意事項

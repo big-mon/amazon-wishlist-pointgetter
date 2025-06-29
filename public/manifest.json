@@ -10,6 +10,9 @@
     "48": "images/icon48.png",
     "128": "images/icon128.png"
   },
+  "host_permissions": [
+    "https://www.amazon.co.jp/*"
+  ],
   "content_scripts": [
     {
       "matches": [

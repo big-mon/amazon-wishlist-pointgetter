@@ -7,14 +7,20 @@ let intersectionObserver: IntersectionObserver | null = null;
 
 /** ウィッシュリスト上の商品ブロックを走査 */
 export const doWishlist = () => {
+  console.log('Starting wishlist processing...');
   const wrapper = document.getElementById("g-items");
-  if (wrapper == null) return;
+  if (wrapper == null) {
+    console.warn('g-items wrapper not found');
+    return;
+  }
   
   // Intersection Observerの初期化
   initIntersectionObserver();
   
   // 既存の商品アイテムを処理
   const allItems = wrapper?.querySelectorAll("li");
+  console.log(`Found ${allItems?.length} items`);
+  
   allItems?.forEach((item) => {
     if (item instanceof HTMLElement) {
       observeItem(item);
@@ -34,8 +40,9 @@ const initIntersectionObserver = () => {
       entries.forEach((entry) => {
         if (entry.isIntersecting && entry.target instanceof HTMLElement) {
           const item = entry.target;
+          console.log('Item became visible:', item);
           if (!processedItems.has(item)) {
-            processedItems.set(item, true);
+            // 処理開始時点でマークする前に実際に処理を試行
             editItem(item);
             // 一度処理したらオブザーバーから外す
             intersectionObserver?.unobserve(item);
@@ -45,8 +52,8 @@ const initIntersectionObserver = () => {
     },
     {
       root: null,
-      rootMargin: '100px', // 100px手前で事前読み込み
-      threshold: 0.1
+      rootMargin: '200px', // 200px手前で事前読み込み
+      threshold: 0
     }
   );
 };
@@ -62,13 +69,23 @@ const observeItem = (item: HTMLElement) => {
  */
 const editItem = async (item: HTMLElement) => {
   // 重複処理チェック
-  if (processedItems.has(item)) return;
+  if (processedItems.has(item)) {
+    console.log('Item already processed, skipping');
+    return;
+  }
   
   // 商品のURLを取得
   const selectorUrl = "h2.a-size-base .a-link-normal";
   const href = item.querySelector(selectorUrl)?.getAttribute("href");
-  if (!href) return;
+  if (!href) {
+    console.warn('Product URL not found');
+    return;
+  }
   const url = domain + href;
+  console.log('Processing item:', url);
+  
+  // この時点で処理済みとしてマーク
+  processedItems.set(item, true);
 
   // 価格要素を取得
   const selectorPrice = ".price-section .a-price";

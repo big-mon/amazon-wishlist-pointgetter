@@ -1,7 +1,7 @@
 {
   "name": "amazon-wishlist-pointgetter",
   "description": "Google Chrome Extension for Amazon.co.jp",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "private": true,
   "license": "MIT",
   "repository": "https://github.com/big-mon/amazon-wishlist-pointgetter",

@@ -11,7 +11,9 @@
     "128": "images/icon128.png"
   },
   "host_permissions": [
-    "https://www.amazon.co.jp/*"
+    "https://www.amazon.co.jp/dp/*",
+    "https://www.amazon.co.jp/gp/product/*",
+    "https://www.amazon.co.jp/*/dp/*"
   ],
   "content_scripts": [
     {
@@ -22,7 +24,6 @@
         "https://www.amazon.co.jp/gp/new-releases/*",
         "https://www.amazon.co.jp/gp/movers-and-shakers/*"
       ],
-      "css": [],
       "js": [
         "js/index.js"
       ],

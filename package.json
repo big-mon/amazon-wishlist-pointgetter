@@ -7,12 +7,12 @@
   "repository": "https://github.com/big-mon/amazon-wishlist-pointgetter",
   "author": "BIG-MON <> (https://github.com/big-mon)",
   "scripts": {
-    "build": "npm run sync-version && webpack --mode=production",
-    "dev": "npm run sync-version && webpack --mode=development",
+    "build": "pnpm run sync-version && webpack --mode=production",
+    "dev": "pnpm run sync-version && webpack --mode=development",
     "watch": "webpack --watch --mode=development",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit",
-    "deploy-chrome": "npm run sync-version && node scripts/deploy.js",
+    "deploy-chrome": "pnpm run sync-version && node scripts/deploy.js",
     "zip": "cd dist && zip -r ../extension.zip .",
     "sync-version": "node scripts/sync-version.js"
   },

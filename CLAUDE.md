@@ -58,4 +58,4 @@ Uses MutationObserver to detect when new wishlist items are dynamically added to
 - `public/manifest.json` - Chrome extension manifest with content script configuration
 - `public/_locales/` - Internationalization files (Japanese/English)
 - `public/images/` - Extension icons
-- Content script runs on Amazon.co.jp wishlist and bestseller pages
+- Content script runs on Amazon.co.jp wishlist pages only

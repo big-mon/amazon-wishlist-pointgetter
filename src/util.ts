@@ -1,33 +1,58 @@
 /** 商品URLから取得ポイントを取得 */
-export const fetchPoints = async (url: string) => {
-  const response = await fetch(url);
-  const resData = await response.text();
-  return parsePoints(resData);
+export const fetchPoints = async (url: string): Promise<string> => {
+  try {
+    console.log('Fetching points for:', url);
+    
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    });
+
+    if (!response.ok) {
+      console.warn(`HTTP ${response.status} for ${url}`);
+      return "取得失敗";
+    }
+
+    const resData = await response.text();
+    const points = parsePoints(resData);
+    console.log('Points found:', points);
+    return points;
+  } catch (error) {
+    console.warn(`Failed to fetch points for ${url}:`, error);
+    return "取得失敗";
+  }
 };
 
 /** 商品ページからポイント部分を取得
  * @param data 商品ページHTML
  */
-const parsePoints = (data: string) => {
+const parsePoints = (data: string): string => {
   // セレクター
-  const normalItem1 =
-    "#addToCart #pointsInsideBuyBox_feature_div span.a-color-price";
-  const normalItem2 =
-    "#addToCart #buyBoxInner span.a-color-price:not(.offer-price)";
-  const kindleItem1 = ".loyalty-points .a-align-bottom";
-  const kindleItem2 = ".ebooks-aip-points-label .a-color-price";
-  const kindleItem3 =
-    "#Ebooks-desktop-KINDLE_ALC-prices-loyaltyPoints .a-color-price";
+  const selectors = [
+    "#addToCart #pointsInsideBuyBox_feature_div span.a-color-price",
+    "#addToCart #buyBoxInner span.a-color-price:not(.offer-price)",
+    ".loyalty-points .a-align-bottom",
+    ".ebooks-aip-points-label .a-color-price",
+    "#Ebooks-desktop-KINDLE_ALC-prices-loyaltyPoints .a-color-price"
+  ];
 
-  // 取得ポイント部分のDOM
-  const dom = new DOMParser()
-    .parseFromString(data, "text/html")
-    .querySelector(
-      `${normalItem1},${normalItem2},${kindleItem1},${kindleItem2},${kindleItem3}`
-    );
-  if (!dom || !dom.textContent) return "";
+  try {
+    // 取得ポイント部分のDOM
+    const dom = new DOMParser()
+      .parseFromString(data, "text/html")
+      .querySelector(selectors.join(","));
+    
+    if (!dom || !dom.textContent) {
+      return "";
+    }
 
-  return escapeHtml(trimText(dom.textContent));
+    const pointText = trimText(dom.textContent);
+    return pointText ? escapeHtml(pointText) : "";
+  } catch (error) {
+    console.warn('Failed to parse points:', error);
+    return "";
+  }
 };
 
 /** 文字列エスケープ
@@ -44,5 +69,8 @@ const escapeHtml = (unsafe: string) =>
 /** 文字列トリム
  * @param text トリムを行う文字列
  */
-const trimText = (text: string) =>
+const trimText = (text: string): string =>
   text.replace(/\t/g, "").replace(/ /g, "").replace(/\r?\n/g, "");
+
+/** 重複処理チェック用のWeakMap */
+export const processedItems = new WeakMap<HTMLElement, boolean>();

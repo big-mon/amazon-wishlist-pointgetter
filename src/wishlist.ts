@@ -16,6 +16,8 @@ const wishlistPointTargetSelectors = [
   '[id^="itemPriceDrop_"]',
 ] as const;
 
+const fetchFailureSentinel = "取得失敗";
+
 let intersectionObserver: IntersectionObserver | null = null;
 const processingItems = new WeakMap<HTMLElement, boolean>();
 
@@ -40,6 +42,9 @@ export const findWishlistUrlElement = (item: ParentNode): HTMLAnchorElement | nu
 
 export const findWishlistPointTarget = (item: ParentNode): HTMLElement | null =>
   findFirstMatch<HTMLElement>(item, wishlistPointTargetSelectors);
+
+const isDisplayablePoints = (result: string) =>
+  result !== "" && result !== fetchFailureSentinel;
 
 const removeExtensionElements = (item: ParentNode) => {
   item.querySelectorAll(extensionElementSelector).forEach((element) => element.remove());
@@ -119,7 +124,7 @@ export const editItem = async (
 
   try {
     const result = await fetcher(createProductUrl(href));
-    if (result) {
+    if (isDisplayablePoints(result)) {
       priceTarget.appendChild(createPointDisplay(result));
     }
   } catch (error) {
@@ -174,7 +179,6 @@ const observer = new MutationObserver((mutations) => {
 
   items.forEach((item) => {
     observeItem(item);
-    void editItem(item);
   });
 });
 

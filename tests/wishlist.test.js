@@ -168,6 +168,24 @@ const main = async () => {
   {
     const pointTarget = new FakeNode();
     const item = new FakeItem({
+      href: "/dp/B000000004",
+      selectors: {
+        ".price-section .a-price": pointTarget,
+      },
+    });
+
+    await editItem(item, async () => "取得失敗");
+
+    assert.equal(
+      countPointBadges(pointTarget),
+      0,
+      "does not append a badge when fetchPoints returns the failure sentinel",
+    );
+  }
+
+  {
+    const pointTarget = new FakeNode();
+    const item = new FakeItem({
       href: "/dp/B000000003",
       selectors: {
         ".price-section .a-price": pointTarget,

@@ -8,7 +8,8 @@
   "author": "BIG-MON <> (https://github.com/big-mon)",
   "scripts": {
     "build": "webpack",
-    "watch": "webpack --watch"
+    "watch": "webpack --watch",
+    "test": "node -r ts-node/register/transpile-only tests/util.test.js"
   },
   "devDependencies": {
     "copy-webpack-plugin": "^11.0.0",

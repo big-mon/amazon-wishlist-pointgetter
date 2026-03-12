@@ -5,30 +5,68 @@ export const fetchPoints = async (url: string) => {
   return parsePoints(resData);
 };
 
+const pointSelectors = [
+  {
+    selector: "#addToCart #pointsInsideBuyBox_feature_div span.a-color-price",
+  },
+  {
+    selector: "#addToCart #buyBoxInner span.a-color-price:not(.offer-price)",
+    matcher: isPointCandidate,
+  },
+  {
+    selector: ".loyalty-points .a-align-bottom",
+  },
+  {
+    selector: ".ebooks-aip-points-label .a-color-price",
+  },
+  {
+    selector: "#Ebooks-desktop-KINDLE_ALC-prices-loyaltyPoints .a-color-price",
+  },
+] as Array<{
+  selector: string;
+  matcher?: (element: Element) => boolean;
+}>;
+
 /** 商品ページからポイント部分を取得
  * @param data 商品ページHTML
  */
-const parsePoints = (data: string) => {
-  // セレクター
-  const normalItem1 =
-    "#addToCart #pointsInsideBuyBox_feature_div span.a-color-price";
-  const normalItem2 =
-    "#addToCart #buyBoxInner span.a-color-price:not(.offer-price)";
-  const kindleItem1 = ".loyalty-points .a-align-bottom";
-  const kindleItem2 = ".ebooks-aip-points-label .a-color-price";
-  const kindleItem3 =
-    "#Ebooks-desktop-KINDLE_ALC-prices-loyaltyPoints .a-color-price";
-
-  // 取得ポイント部分のDOM
-  const dom = new DOMParser()
-    .parseFromString(data, "text/html")
-    .querySelector(
-      `${normalItem1},${normalItem2},${kindleItem1},${kindleItem2},${kindleItem3}`
-    );
+export const parsePoints = (data: string) => {
+  const doc = new DOMParser().parseFromString(data, "text/html");
+  const dom = findPointNode(doc);
   if (!dom || !dom.textContent) return "";
 
   return escapeHtml(trimText(dom.textContent));
 };
+
+export const findPointNode = (root: ParentNode) => {
+  for (const { selector, matcher } of pointSelectors) {
+    const candidates = root.querySelectorAll(selector);
+    for (const candidate of candidates) {
+      if (!matcher || matcher(candidate)) {
+        return candidate;
+      }
+    }
+  }
+
+  return null;
+};
+
+function isPointCandidate(element: Element) {
+  const texts = [
+    element.textContent,
+    element.parentElement?.textContent,
+    element.closest('[id*="point"],[class*="point"]')?.textContent,
+  ];
+
+  return texts.some((text) => looksLikePointText(text));
+}
+
+function looksLikePointText(text: string | null | undefined) {
+  if (!text) return false;
+
+  const normalized = trimText(text).toLowerCase();
+  return normalized.includes("pt") || normalized.includes("ポイント");
+}
 
 /** 文字列エスケープ
  * @param unsafe 無害化する文字列

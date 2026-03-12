@@ -12,6 +12,7 @@
     "watch": "webpack --watch --mode=development",
     "clean": "rm -rf dist",
     "type-check": "tsc --noEmit",
+    "test": "node -r ts-node/register/transpile-only tests/util.test.js",
     "deploy-chrome": "node scripts/deploy.js",
     "zip": "cd dist && zip -r ../extension.zip .",
     "sync-version": "node scripts/sync-version.js",

@@ -11,6 +11,7 @@
     "dev": "webpack --mode=development",
     "watch": "webpack --watch --mode=development",
     "clean": "rm -rf dist",
+    "test": "node -r ts-node/register/transpile-only tests/wishlist.test.js",
     "type-check": "tsc --noEmit",
     "deploy-chrome": "node scripts/deploy.js",
     "zip": "cd dist && zip -r ../extension.zip .",

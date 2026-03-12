@@ -1,60 +1,84 @@
 import { fetchPoints, processedItems } from "./util";
 
-const domain = location.protocol + "//" + location.host;
+const extensionElementSelector = "[data-devola-element]";
 
-/**
- * Devola Chrome Extension - Point Display System
- * 
- * All elements created by this extension are marked with:
- * - CSS classes: devola-extension-element, devola-points-*
- * - Data attributes: data-devola-element, data-devola-version
- * 
- * This allows easy identification and potential cleanup of extension-added elements.
- */
+const wishlistUrlSelectors = [
+  "h2.a-size-base .a-link-normal",
+  'a[id^="itemName_"]',
+] as const;
 
-/** Intersection Observer for lazy loading */
+const wishlistPointTargetSelectors = [
+  ".price-section .a-price",
+  '[id^="itemPrice_"] .a-price',
+  '[id^="itemPriceDrop_"] .a-price',
+  ".price-section",
+  '[id^="itemPrice_"]',
+  '[id^="itemPriceDrop_"]',
+] as const;
+
 let intersectionObserver: IntersectionObserver | null = null;
+const processingItems = new WeakMap<HTMLElement, boolean>();
 
-/** ウィッシュリスト上の商品ブロックを走査 */
+const getDomain = () => `${location.protocol}//${location.host}`;
+
+const findFirstMatch = <T extends Element>(
+  root: ParentNode,
+  selectors: readonly string[],
+): T | null => {
+  for (const selector of selectors) {
+    const element = root.querySelector(selector);
+    if (element) {
+      return element as T;
+    }
+  }
+
+  return null;
+};
+
+export const findWishlistUrlElement = (item: ParentNode): HTMLAnchorElement | null =>
+  findFirstMatch<HTMLAnchorElement>(item, wishlistUrlSelectors);
+
+export const findWishlistPointTarget = (item: ParentNode): HTMLElement | null =>
+  findFirstMatch<HTMLElement>(item, wishlistPointTargetSelectors);
+
+const removeExtensionElements = (item: ParentNode) => {
+  item.querySelectorAll(extensionElementSelector).forEach((element) => element.remove());
+};
+
+const createProductUrl = (href: string) => new URL(href, getDomain()).toString();
+
 export const doWishlist = () => {
-  console.log('Starting wishlist processing...');
+  console.log("Starting wishlist processing...");
   const wrapper = document.getElementById("g-items");
   if (wrapper == null) {
-    console.warn('g-items wrapper not found');
+    console.warn("g-items wrapper not found");
     return;
   }
-  
-  // Intersection Observerの初期化
+
   initIntersectionObserver();
-  
-  // 既存の商品アイテムを処理
-  const allItems = wrapper?.querySelectorAll("li");
-  console.log(`Found ${allItems?.length} items`);
-  
-  allItems?.forEach((item) => {
+
+  const allItems = wrapper.querySelectorAll("li");
+  console.log(`Found ${allItems.length} items`);
+
+  allItems.forEach((item) => {
     if (item instanceof HTMLElement) {
       observeItem(item);
     }
   });
 
-  // 動的な要素の追加を監視
-  observer.observe(wrapper, { childList: true });
+  observer.observe(wrapper, { childList: true, subtree: true });
 };
 
-/** Intersection Observerの初期化 */
 const initIntersectionObserver = () => {
   if (intersectionObserver) return;
-  
+
   intersectionObserver = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting && entry.target instanceof HTMLElement) {
           const item = entry.target;
-          console.log('Item became visible:', item);
-          if (!processedItems.has(item)) {
-            // 処理開始時点でマークする前に実際に処理を試行
-            editItem(item);
-            // 一度処理したらオブザーバーから外す
+          if (!processedItems.has(item) && !processingItems.has(item)) {
+            void editItem(item);
             intersectionObserver?.unobserve(item);
           }
         }
@@ -62,120 +86,98 @@ const initIntersectionObserver = () => {
     },
     {
       root: null,
-      rootMargin: '200px', // 200px手前で事前読み込み
-      threshold: 0
-    }
+      rootMargin: "200px",
+      threshold: 0,
+    },
   );
 };
 
-/** アイテムをIntersection Observerに登録 */
 const observeItem = (item: HTMLElement) => {
-  if (processedItems.has(item)) return;
+  if (processedItems.has(item) || processingItems.has(item)) return;
   intersectionObserver?.observe(item);
 };
 
-/** 商品ブロックに取得ポイントを追記
- * @param item 商品HTML
- */
-const editItem = async (item: HTMLElement) => {
-  // 重複処理チェック
-  if (processedItems.has(item)) {
-    console.log('Item already processed, skipping');
-    return;
+export const editItem = async (
+  item: HTMLElement,
+  fetcher: (url: string) => Promise<string> = fetchPoints,
+): Promise<boolean> => {
+  if (processedItems.has(item) || processingItems.has(item)) {
+    return true;
   }
-  
-  // 商品のURLを取得
-  const selectorUrl = "h2.a-size-base .a-link-normal";
-  const href = item.querySelector(selectorUrl)?.getAttribute("href");
-  if (!href) {
-    console.warn('Product URL not found');
-    return;
+
+  const href = findWishlistUrlElement(item)?.getAttribute("href");
+  const priceTarget = findWishlistPointTarget(item);
+  if (!href || priceTarget == null) {
+    return false;
   }
-  const url = domain + href;
-  console.log('Processing item:', url);
-  
-  // この時点で処理済みとしてマーク
-  processedItems.set(item, true);
 
-  // 価格要素を取得
-  const selectorPrice = ".price-section .a-price";
-  const priceTag = item.querySelector(selectorPrice);
-  if (priceTag == null) return;
+  removeExtensionElements(item);
+  processingItems.set(item, true);
 
-  // ローディングインジケータを即座に表示
   const loadingSpinner = createLoadingSpinner();
-  priceTag.appendChild(loadingSpinner);
+  priceTarget.appendChild(loadingSpinner);
 
   try {
-    // 商品の取得ポイントを取得
-    const result = await fetchPoints(url);
-    
-    // ローディングインジケータを削除
-    loadingSpinner.remove();
-    
-    // ポイント情報を表示
-    if (result && result !== "取得失敗") {
-      const pointTag = createPointDisplay(result);
-      priceTag.appendChild(pointTag);
-    } else {
-      const errorTag = createErrorDisplay();
-      priceTag.appendChild(errorTag);
+    const result = await fetcher(createProductUrl(href));
+    if (result) {
+      priceTarget.appendChild(createPointDisplay(result));
     }
   } catch (error) {
-    console.warn('Failed to process item:', error);
+    console.warn("Failed to process item:", error);
+  } finally {
     loadingSpinner.remove();
-    const errorTag = createErrorDisplay();
-    priceTag.appendChild(errorTag);
+    processingItems.delete(item);
+    processedItems.set(item, true);
   }
+
+  return true;
 };
 
-/** ローディングスピナーを作成 */
 const createLoadingSpinner = (): HTMLElement => {
-  const spinner = document.createElement('span');
-  spinner.className = 'devola-points-loading devola-extension-element add-point-loading a-size-small';
-  spinner.style.cssText = 'margin-left: .6rem; color: #666;';
-  spinner.textContent = '⏳';
-  spinner.setAttribute('data-devola-element', 'loading');
+  const spinner = document.createElement("span");
+  spinner.className =
+    "devola-points-loading devola-extension-element add-point-loading a-size-small";
+  spinner.style.cssText = "margin-left: .6rem; color: #666;";
+  spinner.textContent = "...";
+  spinner.setAttribute("data-devola-element", "loading");
   return spinner;
 };
 
-/** ポイント表示要素を作成 */
 const createPointDisplay = (points: string): HTMLElement => {
-  const pointElement = document.createElement('span');
-  pointElement.className = 'devola-points-display devola-extension-element add-point a-size-small';
-  pointElement.style.cssText = 'margin-left: .6rem;';
+  const pointElement = document.createElement("span");
+  pointElement.className =
+    "devola-points-display devola-extension-element add-point a-size-small";
+  pointElement.style.cssText = "margin-left: .6rem;";
   pointElement.innerHTML = `<span class="a-color-price devola-points-text">${points}</span>`;
-  pointElement.setAttribute('data-devola-element', 'points');
-  pointElement.setAttribute('data-devola-version', '1.5.0');
+  pointElement.setAttribute("data-devola-element", "points");
+  pointElement.setAttribute("data-devola-version", "1.5.0");
   return pointElement;
 };
 
-/** エラー表示要素を作成 */
-const createErrorDisplay = (): HTMLElement => {
-  const errorElement = document.createElement('span');
-  errorElement.className = 'devola-points-error devola-extension-element add-point-error a-size-small';
-  errorElement.style.cssText = 'margin-left: .6rem; color: #888; font-size: 11px;';
-  errorElement.textContent = '—';
-  errorElement.setAttribute('data-devola-element', 'error');
-  errorElement.setAttribute('data-devola-status', 'fetch-failed');
-  return errorElement;
-};
-
-/** 要素の監視を定義 */
 const observer = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    // 追加されたノードを対象にループ
-    for (let node of Array.from(mutation.addedNodes)) {
-      if (!(node instanceof HTMLElement)) continue;
-      if (!node.matches("li")) continue;
+  const items = new Set<HTMLElement>();
 
-      // 新しく追加されたアイテムをIntersection Observerに登録
-      observeItem(node);
-    }
+  mutations.forEach((mutation) => {
+    Array.from(mutation.addedNodes).forEach((node) => {
+      if (!(node instanceof HTMLElement)) return;
+
+      if (node.matches("li")) {
+        items.add(node);
+      }
+
+      const parentItem = node.closest("li");
+      if (parentItem instanceof HTMLElement) {
+        items.add(parentItem);
+      }
+    });
+  });
+
+  items.forEach((item) => {
+    observeItem(item);
+    void editItem(item);
   });
 });
 
-/** クリーンアップ関数 */
 export const cleanup = () => {
   if (intersectionObserver) {
     intersectionObserver.disconnect();
@@ -184,5 +186,6 @@ export const cleanup = () => {
   observer.disconnect();
 };
 
-// ページ離脱時のクリーンアップ
-window.addEventListener('beforeunload', cleanup);
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeunload", cleanup);
+}

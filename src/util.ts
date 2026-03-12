@@ -69,7 +69,7 @@ export const parsePoints = (data: string): string => {
 
 export const findPointNode = (root: ParentNode): Element | null => {
   for (const { selector, matcher } of pointSelectors) {
-    const candidates = root.querySelectorAll(selector);
+    const candidates = Array.from(root.querySelectorAll(selector));
     for (const candidate of candidates) {
       if (!matcher || matcher(candidate)) {
         return candidate;

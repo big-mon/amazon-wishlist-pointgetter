@@ -10,6 +10,7 @@
 1. [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole) にアクセス
 2. 拡張機能を登録（初回のみ手動アップロードが必要）
 3. 拡張機能IDをメモしておく（URLの `detail/` の後の文字列）
+4. Account 画面で Publisher ID を確認してメモしておく
 
 ### 2. Google Cloud Console での API設定
 
@@ -75,6 +76,7 @@ curl -X POST https://oauth2.googleapis.com/token \
 GitHub リポジトリの Settings → Secrets and variables → Actions で以下を設定：
 
 - `CHROME_EXTENSION_ID`: Chrome Web Store の拡張機能ID
+- `CHROME_PUBLISHER_ID`: Chrome Web Store の Publisher ID
 - `CHROME_CLIENT_ID`: Google Cloud Console のクライアントID
 - `CHROME_CLIENT_SECRET`: Google Cloud Console のクライアントシークレット
 - `CHROME_REFRESH_TOKEN`: 手順3で取得したリフレッシュトークン
@@ -97,6 +99,7 @@ GitHub Actions の "Deploy to Chrome Web Store" ワークフローを手動実�
 
 ```bash
 export CHROME_EXTENSION_ID="your_extension_id"
+export CHROME_PUBLISHER_ID="your_publisher_id"
 export CHROME_CLIENT_ID="your_client_id"
 export CHROME_CLIENT_SECRET="your_client_secret"
 export CHROME_REFRESH_TOKEN="your_refresh_token"

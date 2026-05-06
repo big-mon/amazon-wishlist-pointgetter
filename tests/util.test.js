@@ -68,6 +68,61 @@ const cases = [
     }),
     expected: "90pt",
   },
+  {
+    name: "supports logged-in all inclusive points markup",
+    root: createRoot({
+      "#points_feature_div > .a-color-price": [
+        createElement({ textContent: "62ポイント (2.5%)" }),
+      ],
+    }),
+    expected: "62ポイント (2.5%)",
+  },
+  {
+    name: "supports point feature containers outside the add to cart buy box",
+    root: createRoot({
+      '[id*="point" i] .a-color-price, [class*="point" i] .a-color-price, [data-feature-name*="point" i] .a-color-price': [
+        createElement({ textContent: "118pt" }),
+      ],
+    }),
+    expected: "118pt",
+  },
+  {
+    name: "supports the regular points feature div",
+    root: createRoot({
+      '[id*="point" i] span, [class*="point" i] span, [data-feature-name*="point" i] span': [
+        createElement({
+          textContent: "118pt",
+          closestTextContent: "ポイント:118pt",
+        }),
+      ],
+    }),
+    expected: "118pt",
+  },
+  {
+    name: "skips point container labels before the point value",
+    root: createRoot({
+      '[id*="point" i] span, [class*="point" i] span, [data-feature-name*="point" i] span': [
+        createElement({
+          textContent: "Amazonポイント",
+          closestTextContent: "Amazonポイント118pt",
+        }),
+        createElement({
+          textContent: "118pt",
+          closestTextContent: "Amazonポイント118pt",
+        }),
+      ],
+    }),
+    expected: "118pt",
+  },
+  {
+    name: "ignores point navigation labels without point values",
+    root: createRoot({
+      '[id*="point" i] span, [class*="point" i] span, [data-feature-name*="point" i] span': [
+        createElement({ textContent: "Amazonポイント" }),
+      ],
+    }),
+    expected: null,
+  },
 ];
 
 for (const testCase of cases) {

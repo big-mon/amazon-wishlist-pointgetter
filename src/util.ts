@@ -42,6 +42,20 @@ const pointSelectors = [
   {
     selector: "#Ebooks-desktop-KINDLE_ALC-prices-loyaltyPoints .a-color-price",
   },
+  {
+    selector: "#points_feature_div > .a-color-price",
+    matcher: isPointValueElement,
+  },
+  {
+    selector:
+      '[id*="point" i] .a-color-price, [class*="point" i] .a-color-price, [data-feature-name*="point" i] .a-color-price',
+    matcher: isPointValueElement,
+  },
+  {
+    selector:
+      '[id*="point" i] span, [class*="point" i] span, [data-feature-name*="point" i] span',
+    matcher: isPointValueElement,
+  },
 ] as Array<{
   selector: string;
   matcher?: (element: Element) => boolean;
@@ -84,17 +98,22 @@ function isPointCandidate(element: Element): boolean {
   const texts = [
     element.textContent,
     element.parentElement?.textContent,
-    element.closest('[id*="point"],[class*="point"]')?.textContent,
+    element.closest('[id*="point" i],[class*="point" i],[data-feature-name*="point" i]')
+      ?.textContent,
   ];
 
   return texts.some((text) => looksLikePointText(text));
+}
+
+function isPointValueElement(element: Element): boolean {
+  return looksLikePointText(element.textContent);
 }
 
 function looksLikePointText(text: string | null | undefined): boolean {
   if (!text) return false;
 
   const normalized = trimText(text).toLowerCase();
-  return normalized.includes("pt") || normalized.includes("ポイント");
+  return /\d[\d,]*(pt|ポイント)/i.test(normalized);
 }
 
 /** 文字列エスケープ

@@ -44,17 +44,17 @@ const pointSelectors = [
   },
   {
     selector: "#points_feature_div > .a-color-price",
-    matcher: isPointCandidate,
+    matcher: isPointValueElement,
   },
   {
     selector:
       '[id*="point" i] .a-color-price, [class*="point" i] .a-color-price, [data-feature-name*="point" i] .a-color-price',
-    matcher: isPointCandidate,
+    matcher: isPointValueElement,
   },
   {
     selector:
       '[id*="point" i] span, [class*="point" i] span, [data-feature-name*="point" i] span',
-    matcher: isPointCandidate,
+    matcher: isPointValueElement,
   },
 ] as Array<{
   selector: string;
@@ -103,6 +103,10 @@ function isPointCandidate(element: Element): boolean {
   ];
 
   return texts.some((text) => looksLikePointText(text));
+}
+
+function isPointValueElement(element: Element): boolean {
+  return looksLikePointText(element.textContent);
 }
 
 function looksLikePointText(text: string | null | undefined): boolean {

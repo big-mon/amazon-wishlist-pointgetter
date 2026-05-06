@@ -99,6 +99,22 @@ const cases = [
     expected: "118pt",
   },
   {
+    name: "skips point container labels before the point value",
+    root: createRoot({
+      '[id*="point" i] span, [class*="point" i] span, [data-feature-name*="point" i] span': [
+        createElement({
+          textContent: "Amazonポイント",
+          closestTextContent: "Amazonポイント118pt",
+        }),
+        createElement({
+          textContent: "118pt",
+          closestTextContent: "Amazonポイント118pt",
+        }),
+      ],
+    }),
+    expected: "118pt",
+  },
+  {
     name: "ignores point navigation labels without point values",
     root: createRoot({
       '[id*="point" i] span, [class*="point" i] span, [data-feature-name*="point" i] span': [

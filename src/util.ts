@@ -121,7 +121,7 @@ export const parsePoints = (data: string): string => {
     }
 
     const pointText = trimText(dom.textContent);
-    return pointText ? escapeHtml(pointText) : "";
+    return pointText;
   } catch (error) {
     console.warn("Failed to parse points:", error);
     return "";
@@ -159,20 +159,9 @@ function isPointValueElement(element: Element): boolean {
 function looksLikePointText(text: string | null | undefined): boolean {
   if (!text) return false;
 
-  const normalized = trimText(text).toLowerCase();
+  const normalized = trimText(text);
   return /\d[\d,]*(pt|ポイント)/i.test(normalized);
 }
-
-/** 文字列エスケープ
- * @param unsafe 無害化する文字列
- */
-const escapeHtml = (unsafe: string) =>
-  unsafe
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
 
 /** 文字列トリム
  * @param text トリムを行う文字列

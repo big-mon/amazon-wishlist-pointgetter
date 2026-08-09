@@ -159,9 +159,7 @@ const initIntersectionObserver = () => {
       });
     },
     {
-      root: null,
       rootMargin: "200px",
-      threshold: 0,
     },
   );
 };
@@ -209,14 +207,13 @@ const processVisibleItem = (item: HTMLElement) => {
     cancelRetryTimer(item);
   }
   if (!needsProcessing(item, href)) {
-    cancelRetryTimer(item);
     intersectionObserver?.unobserve(item);
     return;
   }
   if (!href) return;
 
   const generation = Symbol(href);
-  void editItemForGeneration(
+  void editItem(
     item,
     runtimeOptions.fetcher,
     runtimeOptions.retryWait,
@@ -253,13 +250,7 @@ export const editItem = async (
   item: HTMLElement,
   fetcher: PointsFetcher = fetchPoints,
   wait?: RetryWait,
-): Promise<boolean> => editItemForGeneration(item, fetcher, wait, Symbol());
-
-const editItemForGeneration = async (
-  item: HTMLElement,
-  fetcher: PointsFetcher,
-  wait: RetryWait | undefined,
-  generation: symbol,
+  generation: symbol = Symbol(),
 ): Promise<boolean> => {
   const href = findWishlistUrlElement(item)?.getAttribute("href");
   if (href && processingItems.get(item)?.href === href) {
@@ -331,7 +322,10 @@ const createPointDisplay = (points: string): HTMLElement => {
   pointElement.className =
     "devola-points-display devola-extension-element add-point a-size-small";
   pointElement.style.cssText = "margin-left: .6rem;";
-  pointElement.innerHTML = `<span class="a-color-price devola-points-text">${points}</span>`;
+  const pointsText = document.createElement("span");
+  pointsText.className = "a-color-price devola-points-text";
+  pointsText.textContent = points;
+  pointElement.appendChild(pointsText);
   pointElement.setAttribute("data-devola-element", "points");
   return pointElement;
 };
@@ -402,7 +396,3 @@ export const cleanup = () => {
   runtimeOptions = defaultRuntimeOptions;
   observer.disconnect();
 };
-
-if (typeof window !== "undefined") {
-  window.addEventListener("beforeunload", cleanup);
-}

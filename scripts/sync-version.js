@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 const fs = require('fs');
 const path = require('path');
 
@@ -34,8 +32,4 @@ function syncVersion() {
   }
 }
 
-if (require.main === module) {
-  syncVersion();
-}
-
-module.exports = syncVersion;
+syncVersion();

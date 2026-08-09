@@ -499,7 +499,7 @@ const main = async () => {
     assert.match(
       pointTarget.children.find(
         (child) => child.attributes["data-devola-element"] === "points",
-      ).innerHTML,
+      ).children[0].textContent,
       /90pt/,
       "renders the new href result while the old generation is pending",
     );
@@ -511,7 +511,7 @@ const main = async () => {
     assert.match(
       pointTarget.children.find(
         (child) => child.attributes["data-devola-element"] === "points",
-      ).innerHTML,
+      ).children[0].textContent,
       /90pt/,
       "ignores the old generation when it eventually resolves",
     );
@@ -570,6 +570,34 @@ const main = async () => {
       countPointBadges(pointTarget),
       1,
       "does not permanently complete an item after retry exhaustion",
+    );
+  }
+
+  {
+    const pointTarget = new FakeNode();
+    const item = new FakeItem({
+      href: "/dp/html-significant-points",
+      selectors: {
+        ".price-section .a-price": pointTarget,
+      },
+    });
+    const points = '80pt <bonus> & "member"';
+
+    await editItem(item, async () => pointResult(points));
+
+    const pointBadge = pointTarget.children.find(
+      (child) => child.attributes["data-devola-element"] === "points",
+    );
+    const pointsText = pointBadge.children[0];
+    assert.equal(
+      pointsText.className,
+      "a-color-price devola-points-text",
+      "renders point text in the expected nested span",
+    );
+    assert.equal(
+      pointsText.textContent,
+      points,
+      "renders HTML-significant point text literally without interpretation",
     );
   }
 

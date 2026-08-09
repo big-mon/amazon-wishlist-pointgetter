@@ -63,8 +63,8 @@ graph LR
 <summary>📋 開発環境の準備</summary>
 
 ### 必要な環境
-- **Node.js** 18+
-- **pnpm** (推奨) または npm
+- **Node.js** 20+
+- **pnpm** 9.15.9（この正確なバージョンのみ）
 - **Git**
 
 ### ⚡ セットアップ手順
@@ -74,10 +74,18 @@ graph LR
 git clone git@github.com:big-mon/amazon-wishlist-pointgetter.git
 cd amazon-wishlist-pointgetter
 
-# 2. 依存関係をインストール
-pnpm install
+# 2. pnpm 9.15.9を用意（Node.js 20以上でもCorepackがない場合があります）
+if command -v corepack >/dev/null 2>&1; then
+  corepack enable
+  corepack prepare pnpm@9.15.9 --activate
+else
+  npm install --global pnpm@9.15.9
+fi
 
-# 3. 開発ビルド実行
+# 3. 依存関係を固定してインストール
+pnpm install --frozen-lockfile
+
+# 4. 開発ビルド実行
 pnpm dev
 ```
 
@@ -86,8 +94,10 @@ pnpm dev
 | コマンド | 説明 | 用途 |
 |----------|------|------|
 | `pnpm dev` | 開発ビルド（ソースマップ付き） | 開発時 |
-| `pnpm build` | 本番ビルド（最適化済み） | リリース時 |
-| `pnpm watch` | ファイル監視モード | 開発時の自動ビルド |
+| `pnpm build` | 本番ビルド（最適化済み・ソースマップなし） | リリース時 |
+| `pnpm zip` | `dist/`をクリーン本番buildし、既存archiveを置換 | リリース時 |
+| `pnpm watch` | 変更を監視して開発ビルドを再実行（Hot Reloadではありません） | 継続的な再ビルド |
+| `pnpm test` | 自動テストを実行 | 回帰確認 |
 | `pnpm type-check` | TypeScript型チェック | コード品質確認 |
 | `pnpm clean` | ビルドファイル削除 | クリーンアップ |
 
@@ -106,9 +116,9 @@ pnpm dev
 <summary>🔍 技術詳細を見る</summary>
 
 ### 🧰 技術スタック
-- **言語**: TypeScript 5.7+
-- **ビルドツール**: Webpack 5.99+
-- **パッケージマネージャー**: pnpm
+- **言語**: TypeScript 5.x（正確な解決版はロックファイルを参照）
+- **ビルドツール**: Webpack 5（正確な解決版はロックファイルを参照）
+- **パッケージマネージャー**: pnpm 9.15.9
 - **ターゲット**: ES2022
 - **Chrome拡張**: Manifest V3
 
@@ -130,9 +140,7 @@ pnpm dev
 ### 🎯 技術的なポイント
 
 **🔍 ポイント取得戦略**
-複数のCSSセレクターでAmazonの様々な商品タイプに対応：
-- **通常商品**: `#addToCart #pointsInsideBuyBox_feature_div span.a-color-price`
-- **Kindle商品**: `.loyalty-points .a-align-bottom`, `.ebooks-aip-points-label .a-color-price`
+Amazonの複数の商品マークアップに対応します。実際のセレクターと優先順は `src/util.ts`、回帰例は `tests/util.test.js` を参照してください。
 
 **⚡ パフォーマンス最適化**
 - `IntersectionObserver`による効率的な要素監視

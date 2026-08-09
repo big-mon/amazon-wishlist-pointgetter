@@ -14,11 +14,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0
           
       - name: Check if version changed
         id: version-check
         shell: bash
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
         run: |
           set -euo pipefail
 
@@ -28,13 +30,20 @@ jobs:
             exit 0
           fi
 
-          if ! git rev-parse --verify HEAD~1 >/dev/null 2>&1; then
+          if [ -z "${BEFORE_SHA:-}" ] || [[ "$BEFORE_SHA" =~ ^0+$ ]]; then
             echo "version-changed=false" >> "$GITHUB_OUTPUT"
-            echo "No previous commit available, skipping deployment"
+            echo "Push event has no usable before SHA, skipping deployment safely"
             exit 0
           fi
 
-          previous_version="$(git show HEAD~1:package.json | python3 -c 'import json, sys; print(json.load(sys.stdin)["version"])')"
+          if ! git cat-file -e "${BEFORE_SHA}^{commit}" 2>/dev/null || \
+             ! git cat-file -e "${BEFORE_SHA}:package.json" 2>/dev/null; then
+            echo "version-changed=false" >> "$GITHUB_OUTPUT"
+            echo "Before commit or its package.json is unavailable, skipping deployment safely"
+            exit 0
+          fi
+
+          previous_version="$(git show "${BEFORE_SHA}:package.json" | python3 -c 'import json, sys; print(json.load(sys.stdin)["version"])')"
           current_version="$(python3 -c 'import json, pathlib; print(json.loads(pathlib.Path("package.json").read_text(encoding="utf-8"))["version"])')"
 
           echo "Previous package.json version: ${previous_version}"
@@ -56,24 +65,25 @@ jobs:
           
       - name: Setup pnpm
         if: steps.version-check.outputs.version-changed == 'true'
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 9.15.9
           
       - name: Install dependencies
         if: steps.version-check.outputs.version-changed == 'true'
-        run: pnpm install
-        
-      - name: Build extension
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
         if: steps.version-check.outputs.version-changed == 'true'
-        run: pnpm build
-        
-      - name: Create zip file
+        run: pnpm test
+
+      - name: Type-check
         if: steps.version-check.outputs.version-changed == 'true'
-        run: |
-          cd dist
-          zip -r ../extension.zip .
-          cd ..
+        run: pnpm type-check
+        
+      - name: Clean build and create zip file
+        if: steps.version-check.outputs.version-changed == 'true'
+        run: pnpm zip
           
       - name: Upload to Chrome Web Store
         if: steps.version-check.outputs.version-changed == 'true'

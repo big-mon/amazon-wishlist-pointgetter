@@ -1,125 +1,82 @@
-# 自動デプロイ設定
+# Chrome Web Store デプロイ
 
-## 概要
-このプロジェクトは GitHub Actions を使用して Chrome Web Store への自動デプロイを行います。
+## ワークフローの動作
 
-## 必要な設定
+`.github/workflows/deploy.yml` は次の場合に動作します。
 
-### 1. Chrome Web Store Developer Dashboard での設定
+- `main` へのpush: push前のcommit（`github.event.before`）と現在のHEADで `package.json` の `version` が変わった場合だけ公開する
+- `workflow_dispatch`: バージョン差分の確認を省略し、手動で公開する
 
-1. [Chrome Web Store Developer Dashboard](https://chrome.google.com/webstore/devconsole) にアクセス
-2. 拡張機能を登録（初回のみ手動アップロードが必要）
-3. 拡張機能IDをメモしておく（URLの `detail/` の後の文字列）
-4. Account 画面で Publisher ID を確認してメモしておく
+pushに複数commitが含まれる場合も、直前の1 commitではなくpush前のSHAとHEADを比較します。`before` が未設定または全ゼロ、commitまたはその `package.json` を取得できない場合は、意図しない公開を避けるため安全にskipします。
 
-### 2. Google Cloud Console での API設定
+公開前に pnpm 9.15.9 で固定ロックファイルから依存関係をインストールし、テスト、型チェック、クリーンな本番buildとzip作成を順に実行します。`package.json` のバージョンを変更するときは `pnpm sync-version` を実行し、`public/manifest.json` も同じバージョンにしてください。タグのpushだけではこのワークフローは起動しません。
 
-1. [Google Cloud Console](https://console.cloud.google.com/) で新しいプロジェクトを作成
-2. Chrome Web Store API を有効化
-3. **OAuth同意画面** を設定：
-   - ユーザータイプ: **外部**
-   - アプリ名、ユーザーサポートメール、デベロッパー連絡先を入力
-   - **テストユーザー**に自分のGmailアドレスを追加
-4. 認証情報 → OAuth 2.0 クライアント ID を作成
-   - アプリケーションの種類: デスクトップアプリケーション
-   - 承認済みリダイレクトURIに `http://localhost:8080` を追加
-5. クライアントIDとクライアントシークレットをメモ
+## Chrome Web Store とOAuthの準備
 
-### 3. リフレッシュトークンの取得
+1. Chrome Web Store Developer Dashboardで拡張機能を登録します。初回アップロード、Store listing、Privacyの入力は手動で完了してください。
+2. Publisher > SettingsでPublisher IDを確認します。複数Publisherに所属する場合は対象を切り替えてから確認してください。
+3. Google CloudプロジェクトでChrome Web Store APIを有効化します。
+4. OAuth同意画面を設定します。ExternalでTestingを使う場合は、公開を担当するGoogleアカウントをテストユーザーに追加します。
+5. OAuth client IDを「Web application」として作成し、Authorized redirect URIに `https://developers.google.com/oauthplayground` を追加します。
+6. [OAuth 2.0 Playground](https://developers.google.com/oauthplayground/) の設定で「Use your own OAuth credentials」を有効にし、そのclient IDとclient secretを入力します。
+7. `https://www.googleapis.com/auth/chromewebstore` を独自scopeとして承認します。Chrome Web Store itemを所有するGoogleアカウントでログインしてください。
+8. authorization codeをtokenへ交換し、表示されたrefresh tokenを安全に保存します。認証情報やtokenをリポジトリへ追加しないでください。
 
-**手順1: 認証URLにアクセス**
+詳細は[Chrome Web Store API公式ガイド](https://developer.chrome.com/docs/webstore/using-api)を参照してください。
 
-以下のURLにアクセス（YOUR_CLIENT_IDを実際のクライアントIDに置き換え）：
+## GitHub ActionsのSecrets
 
-```
-https://accounts.google.com/o/oauth2/v2/auth?client_id=YOUR_CLIENT_ID&redirect_uri=urn:ietf:wg:oauth:2.0:oob&response_type=code&scope=https://www.googleapis.com/auth/chromewebstore
-```
+Repository Settings > Secrets and variables > Actionsに次を登録します。
 
-**手順2: 承認とコード取得**
+- `CHROME_EXTENSION_ID`: Chrome Web Storeの拡張機能ID
+- `CHROME_PUBLISHER_ID`: 対象PublisherのID
+- `CHROME_CLIENT_ID`: Web application OAuth client ID
+- `CHROME_CLIENT_SECRET`: OAuth client secret
+- `CHROME_REFRESH_TOKEN`: OAuth Playgroundで取得したrefresh token
 
-1. Googleアカウントでログイン
-2. 「このアプリは確認されていません」画面が表示された場合：
-   - 「詳細」をクリック
-   - 「（アプリ名）に移動（安全ではありません）」をクリック
-3. Chrome Web Store への権限を承認
-4. 「認証コード」（4/から始まる長い文字列）をコピー
+## ローカルでのbuild、zip、upload
 
-**手順3: リフレッシュトークンに変換**
+前提:
 
-以下のコマンドを実行（YOUR_CLIENT_ID、YOUR_CLIENT_SECRET、YOUR_AUTH_CODEを置き換え）：
+- Node.js 20以上
+- pnpm 9.15.9
+- Chrome Web Storeで既に登録済みのitemと、上記OAuth認証情報
 
 ```bash
-curl -X POST https://oauth2.googleapis.com/token \
-  -H "Content-Type: application/x-www-form-urlencoded" \
-  -d "client_id=YOUR_CLIENT_ID" \
-  -d "client_secret=YOUR_CLIENT_SECRET" \
-  -d "code=YOUR_AUTH_CODE" \
-  -d "grant_type=authorization_code" \
-  -d "redirect_uri=urn:ietf:wg:oauth:2.0:oob"
+if command -v corepack >/dev/null 2>&1; then
+  corepack enable
+  corepack prepare pnpm@9.15.9 --activate
+else
+  npm install --global pnpm@9.15.9
+fi
+
+pnpm install --frozen-lockfile
+pnpm test
+pnpm type-check
+pnpm build
+pnpm zip
 ```
 
-**レスポンス例**：
-```json
-{
-  "access_token": "ya29.a0...",
-  "expires_in": 3599,
-  "refresh_token": "1//04...（これを使用）",
-  "scope": "https://www.googleapis.com/auth/chromewebstore",
-  "token_type": "Bearer"
-}
-```
+`package.json` の `packageManager` も `pnpm@9.15.9` に固定されています。Node.js 20以上でもCorepackが同梱または有効とは限らないため、Corepackコマンドが存在しない環境では上記npm fallbackを使用してください。
 
-`refresh_token`の値をGitHub Secretsに設定してください。
+本番buildは最初に `dist/` 全体を削除し、外部source mapを含めずに再生成します。`pnpm zip` は既存の `extension.zip` と `dist/` を削除し、クリーンな本番buildを実行して、現在の `dist/` のファイルだけを決定的な順序と固定metadataでarchiveへ格納します。OSの `zip` コマンドは不要です。
 
-### 4. GitHub Secrets の設定
+uploadスクリプトが読む環境変数:
 
-GitHub リポジトリの Settings → Secrets and variables → Actions で以下を設定：
+- 必須: `CHROME_EXTENSION_ID`, `CHROME_PUBLISHER_ID`, `CHROME_CLIENT_ID`, `CHROME_CLIENT_SECRET`, `CHROME_REFRESH_TOKEN`
+- 任意: `CHROME_EXTENSION_ZIP_PATH`（既定 `extension.zip`）
+- 任意: `CHROME_PUBLISH`（既定 `true`; `false` ならupload後にpublishしない）
 
-- `CHROME_EXTENSION_ID`: Chrome Web Store の拡張機能ID
-- `CHROME_PUBLISHER_ID`: Chrome Web Store の Publisher ID
-- `CHROME_CLIENT_ID`: Google Cloud Console のクライアントID
-- `CHROME_CLIENT_SECRET`: Google Cloud Console のクライアントシークレット
-- `CHROME_REFRESH_TOKEN`: 手順3で取得したリフレッシュトークン
-
-## 使用方法
-
-### 自動デプロイ
-バージョンタグをプッシュすると自動的にデプロイされます：
+値は `.env.example` を参考にshellまたは安全なsecret管理から設定し、次を実行します。
 
 ```bash
-git tag v1.0.1
-git push origin v1.0.1
-```
-
-### 手動デプロイ
-GitHub Actions の "Deploy to Chrome Web Store" ワークフローを手動実行することも可能です。
-
-### ローカルからのデプロイ
-環境変数を設定してローカルからデプロイ：
-
-```bash
-export CHROME_EXTENSION_ID="your_extension_id"
-export CHROME_PUBLISHER_ID="your_publisher_id"
-export CHROME_CLIENT_ID="your_client_id"
-export CHROME_CLIENT_SECRET="your_client_secret"
-export CHROME_REFRESH_TOKEN="your_refresh_token"
-
 pnpm deploy-chrome
 ```
 
 ## 注意事項
 
-- 初回は手動でChrome Web Storeに拡張機能をアップロードする必要があります
-- リフレッシュトークンは定期的に更新が必要な場合があります
-- 拡張機能のレビューは自動では行われません（Googleの審査が必要）
-- 本番環境への公開は慎重に行ってください
-
-## トラブルシューティング
-
-### よくあるエラー
-1. `Invalid refresh token` - リフレッシュトークンを再取得
-2. `Extension not found` - 拡張機能IDを確認
-3. `Insufficient permissions` - OAuth スコープを確認
-
-### ログの確認
-GitHub Actions の実行ログで詳細なエラー情報を確認できます。
+- manifestのversionを上げずに既存itemへ新しいpackageをuploadすると失敗します。
+- publishは審査への提出であり、即時公開を保証しません。
+- refresh tokenは取り消しや失効があり得ます。`Invalid refresh token` の場合は所有者アカウントとOAuth設定を確認して再取得します。
+- `Extension not found` はextension ID、publisher ID、選択中のPublisherを確認します。
+- `Insufficient permissions` は所有者アカウントとscopeを確認します。

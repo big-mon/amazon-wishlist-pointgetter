@@ -1,5 +1,16 @@
+export type FetchPointsResult =
+  | { kind: "success"; points: string }
+  | { kind: "transient-failure" };
+
+export type PointsFetcher = (url: string) => Promise<FetchPointsResult>;
+export type RetryWait = () => Promise<void>;
+
+const transientFailure: FetchPointsResult = { kind: "transient-failure" };
+const defaultRetryWait: RetryWait = () =>
+  new Promise((resolve) => setTimeout(resolve, 100));
+
 /** 商品URLから取得ポイントを取得 */
-export const fetchPoints = async (url: string): Promise<string> => {
+export const fetchPoints: PointsFetcher = async (url) => {
   try {
     console.log("Fetching points for:", url);
 
@@ -12,17 +23,43 @@ export const fetchPoints = async (url: string): Promise<string> => {
 
     if (!response.ok) {
       console.warn(`HTTP ${response.status} for ${url}`);
-      return "取得失敗";
+      return transientFailure;
     }
 
     const resData = await response.text();
     const points = parsePoints(resData);
     console.log("Points found:", points);
-    return points;
+    return { kind: "success", points };
   } catch (error) {
     console.warn(`Failed to fetch points for ${url}:`, error);
-    return "取得失敗";
+    return transientFailure;
   }
+};
+
+export const fetchPointsWithRetry = async (
+  url: string,
+  fetcher: PointsFetcher = fetchPoints,
+  wait: RetryWait = defaultRetryWait,
+): Promise<FetchPointsResult> => {
+  const maximumAttempts = 3;
+
+  for (let attempt = 1; attempt <= maximumAttempts; attempt += 1) {
+    let result: FetchPointsResult;
+    try {
+      result = await fetcher(url);
+    } catch (error) {
+      console.warn(`Failed to fetch points for ${url}:`, error);
+      result = transientFailure;
+    }
+
+    if (result.kind === "success" || attempt === maximumAttempts) {
+      return result;
+    }
+
+    await wait();
+  }
+
+  return transientFailure;
 };
 
 const pointSelectors = [
@@ -132,6 +169,3 @@ const escapeHtml = (unsafe: string) =>
  */
 const trimText = (text: string): string =>
   text.replace(/\t/g, "").replace(/ /g, "").replace(/\r?\n/g, "");
-
-/** 重複処理チェック用のWeakMap */
-export const processedItems = new WeakMap<HTMLElement, boolean>();

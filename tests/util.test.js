@@ -1,5 +1,5 @@
 const assert = require("node:assert/strict");
-const { findPointNode } = require("../src/util");
+const { fetchPoints, fetchPointsWithRetry, findPointNode } = require("../src/util");
 
 const createElement = ({ textContent = "", parentTextContent, closestTextContent } = {}) => ({
   textContent,
@@ -130,4 +130,72 @@ for (const testCase of cases) {
   assert.equal(node?.textContent ?? null, testCase.expected, testCase.name);
 }
 
-console.log(`Passed ${cases.length} util tests.`);
+const main = async () => {
+  const originalFetch = global.fetch;
+  const originalWarn = console.warn;
+  const originalAbortSignalTimeout = AbortSignal.timeout;
+  console.warn = () => {};
+
+  try {
+    for (const [status, expectedKind] of [
+      [404, "terminal-failure"],
+      [410, "terminal-failure"],
+      [408, "transient-failure"],
+      [429, "transient-failure"],
+      [500, "transient-failure"],
+      [503, "transient-failure"],
+    ]) {
+      global.fetch = async () => ({ ok: false, status });
+      const result = await fetchPoints(`https://www.amazon.co.jp/dp/status-${status}`);
+
+      assert.equal(result.kind, expectedKind, `classifies HTTP ${status}`);
+      if (expectedKind === "terminal-failure") {
+        assert.equal(result.status, status, `retains terminal HTTP ${status}`);
+      }
+    }
+
+    const receivedSignals = [];
+    const requestedTimeouts = [];
+    let retryWaits = 0;
+    AbortSignal.timeout = (delay) => {
+      requestedTimeouts.push(delay);
+      return new AbortController().signal;
+    };
+    global.fetch = async (_url, options) => {
+      receivedSignals.push(options.signal);
+      const error = new Error("request timed out");
+      error.name = "TimeoutError";
+      throw error;
+    };
+
+    const timeoutResult = await fetchPointsWithRetry(
+      "https://www.amazon.co.jp/dp/timeout",
+      fetchPoints,
+      async () => {
+        retryWaits += 1;
+      },
+    );
+
+    assert.equal(timeoutResult.kind, "transient-failure", "treats timeouts as transient");
+    assert.equal(receivedSignals.length, 3, "retries a timed-out request");
+    assert.equal(retryWaits, 2, "waits between timeout retries");
+    assert.deepEqual(requestedTimeouts, [10_000, 10_000, 10_000], "uses a 10-second timeout");
+    assert.ok(
+      receivedSignals.every((signal) => signal instanceof AbortSignal),
+      "passes an AbortSignal to every fetch attempt",
+    );
+  } finally {
+    global.fetch = originalFetch;
+    AbortSignal.timeout = originalAbortSignalTimeout;
+    console.warn = originalWarn;
+  }
+};
+
+main()
+  .then(() => {
+    console.log(`Passed ${cases.length} parser cases and fetch behavior tests.`);
+  })
+  .catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });

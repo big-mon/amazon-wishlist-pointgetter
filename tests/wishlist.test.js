@@ -150,6 +150,7 @@ const countPointBadges = (target) =>
 
 const pointResult = (points) => ({ kind: "success", points });
 const transientFailure = { kind: "transient-failure" };
+const terminalFailure = (status) => ({ kind: "terminal-failure", status });
 const flushPromises = () => new Promise((resolve) => setImmediate(resolve));
 
 (() => {
@@ -204,6 +205,103 @@ const flushPromises = () => new Promise((resolve) => setImmediate(resolve));
 })();
 
 const main = async () => {
+  for (const [configuredDelay, expectedDelay] of [
+    [10, 250],
+    [60_000, 30_000],
+  ]) {
+    const item = new FakeItem({
+      href: `/dp/delay-${configuredDelay}`,
+      selectors: {
+        ".price-section .a-price": new FakeNode(),
+      },
+    });
+    const wrapper = new FakeNode();
+    wrapper.querySelectorAll = (selector) => (selector === "li" ? [item] : []);
+    global.document.getElementById = (id) => (id === "g-items" ? wrapper : null);
+
+    let attempts = 0;
+    const scheduled = [];
+    const canceled = [];
+    doWishlist({
+      fetcher: async () => {
+        attempts += 1;
+        return transientFailure;
+      },
+      retryWait: async () => {},
+      retryCycleDelayMs: configuredDelay,
+      scheduleRetry: (callback, delay) => {
+        const timer = { callback, delay };
+        scheduled.push(timer);
+        return timer;
+      },
+      cancelRetry: (timer) => canceled.push(timer),
+    });
+
+    intersectionObserverCallback([{ isIntersecting: true, target: item }]);
+    await flushPromises();
+
+    assert.equal(scheduled[0].delay, expectedDelay, `clamps ${configuredDelay}ms retry delay`);
+
+    if (configuredDelay === 10) {
+      intersectionObserverCallback([{ isIntersecting: false, target: item }]);
+      assert.ok(canceled.includes(scheduled[0]), "leaving the viewport cancels the pending retry");
+
+      scheduled[0].callback();
+      await flushPromises();
+      assert.equal(attempts, 3, "a canceled retry callback does not fetch again");
+    }
+
+    cleanup();
+  }
+
+  {
+    const pointTarget = new FakeNode();
+    const item = new FakeItem({
+      href: "/dp/terminal-404",
+      selectors: {
+        ".price-section .a-price": pointTarget,
+      },
+    });
+    const wrapper = new FakeNode();
+    wrapper.querySelectorAll = (selector) => (selector === "li" ? [item] : []);
+    global.document.getElementById = (id) => (id === "g-items" ? wrapper : null);
+
+    let attempts = 0;
+    const scheduled = [];
+    doWishlist({
+      fetcher: async () => {
+        attempts += 1;
+        return terminalFailure(404);
+      },
+      retryWait: async () => {},
+      scheduleRetry: (callback, delay) => {
+        const timer = { callback, delay };
+        scheduled.push(timer);
+        return timer;
+      },
+    });
+
+    intersectionObserverCallback([{ isIntersecting: true, target: item }]);
+    await flushPromises();
+
+    assert.equal(attempts, 1, "does not retry a terminal HTTP failure");
+    assert.equal(scheduled.length, 0, "does not schedule another terminal retry cycle");
+    assert.equal(countPointBadges(pointTarget), 0, "does not display points for a terminal failure");
+
+    intersectionObserverCallback([{ isIntersecting: true, target: item }]);
+    await flushPromises();
+    assert.equal(attempts, 1, "keeps a terminal href completed across visibility events");
+
+    item.anchor.setAttribute("href", "/dp/terminal-410");
+    mutationObserverCallback([
+      { addedNodes: [], target: item.anchor, type: "attributes" },
+    ]);
+    await flushPromises();
+    assert.equal(attempts, 2, "processes a terminal item again after its href changes");
+
+    cleanup();
+  }
+
   {
     const pointTarget = new FakeNode();
     const item = new FakeItem({

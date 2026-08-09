@@ -140,7 +140,7 @@ pnpm dev
 ### 🎯 技術的なポイント
 
 **🔍 ポイント取得戦略**
-Amazonの複数の商品マークアップに対応します。実際のセレクターと優先順は `src/util.ts`、回帰例は `tests/util.test.js` を参照してください。
+Amazonの複数の商品・ウィッシュリストマークアップに対応します。商品ページの実際のセレクターと優先順は `src/util.ts`、回帰例は `tests/util.test.js`、ウィッシュリストのセレクターとDOM動作は `src/wishlist.ts` と `tests/wishlist.test.js` を参照してください。
 
 **⚡ パフォーマンス最適化**
 - `IntersectionObserver`による効率的な要素監視

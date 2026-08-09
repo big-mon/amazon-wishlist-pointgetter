@@ -53,7 +53,6 @@ fi
 pnpm install --frozen-lockfile
 pnpm test
 pnpm type-check
-pnpm build
 pnpm zip
 ```
 

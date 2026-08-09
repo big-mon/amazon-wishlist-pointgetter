@@ -31,7 +31,7 @@ const itemGenerations = new WeakMap<HTMLElement, ItemGeneration>();
 let visibleItems = new WeakSet<HTMLElement>();
 type ProcessedItemState = {
   href: string;
-  outcome: "points" | "no-points";
+  outcome: "points" | "no-points" | "terminal-failure";
 };
 const processedItems = new WeakMap<HTMLElement, ProcessedItemState>();
 
@@ -190,12 +190,6 @@ const scheduleRetryCycle = (item: HTMLElement, href: string) => {
     retryTimers.delete(item);
     if (!visibleItems.has(item)) return;
 
-    const currentHref = findWishlistUrlElement(item)?.getAttribute("href") ?? null;
-    if (currentHref !== href) {
-      processVisibleItem(item);
-      return;
-    }
-
     processVisibleItem(item);
   }, boundedRetryCycleDelay());
 
@@ -304,6 +298,9 @@ const editItemForGeneration = async (
         href,
         outcome: result.points === "" ? "no-points" : "points",
       });
+    } else if (result.kind === "terminal-failure") {
+      completed = true;
+      processedItems.set(item, { href, outcome: "terminal-failure" });
     }
   } catch (error) {
     if (itemGenerations.get(item)?.token === generation) {

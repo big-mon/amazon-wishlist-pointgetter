@@ -1,6 +1,7 @@
 export type FetchPointsResult =
   | { kind: "success"; points: string }
-  | { kind: "transient-failure" };
+  | { kind: "transient-failure" }
+  | { kind: "terminal-failure"; status: number };
 
 export type PointsFetcher = (url: string) => Promise<FetchPointsResult>;
 export type RetryWait = () => Promise<void>;
@@ -19,10 +20,19 @@ export const fetchPoints: PointsFetcher = async (url) => {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       },
+      signal: AbortSignal.timeout(10_000),
     });
 
     if (!response.ok) {
       console.warn(`HTTP ${response.status} for ${url}`);
+      if (
+        response.status >= 400 &&
+        response.status < 500 &&
+        response.status !== 408 &&
+        response.status !== 429
+      ) {
+        return { kind: "terminal-failure", status: response.status };
+      }
       return transientFailure;
     }
 
@@ -52,7 +62,7 @@ export const fetchPointsWithRetry = async (
       result = transientFailure;
     }
 
-    if (result.kind === "success" || attempt === maximumAttempts) {
+    if (result.kind !== "transient-failure" || attempt === maximumAttempts) {
       return result;
     }
 

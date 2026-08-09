@@ -2,19 +2,23 @@
   "name": "amazon-wishlist-pointgetter",
   "description": "Google Chrome Extension for Amazon.co.jp",
   "version": "1.5.6",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=20"
+  },
   "private": true,
   "license": "MIT",
   "repository": "https://github.com/big-mon/amazon-wishlist-pointgetter",
   "author": "BIG-MON <> (https://github.com/big-mon)",
   "scripts": {
-    "build": "webpack --mode=production",
+    "build": "node scripts/build-production.js",
     "dev": "webpack --mode=development",
     "watch": "webpack --watch --mode=development",
     "clean": "rm -rf dist",
-    "test": "node -r ts-node/register/transpile-only tests/util.test.js && node -r ts-node/register/transpile-only tests/wishlist.test.js",
+    "test": "node -r ts-node/register/transpile-only tests/util.test.js && node -r ts-node/register/transpile-only tests/wishlist.test.js && node tests/webpack-config.test.js && node tests/package-extension.test.js",
     "type-check": "tsc --noEmit",
     "deploy-chrome": "node scripts/upload-chrome-web-store.js",
-    "zip": "cd dist && zip -r ../extension.zip .",
+    "zip": "node scripts/package-extension.js",
     "sync-version": "node scripts/sync-version.js",
     "prepare": "husky install"
   },
@@ -27,5 +31,11 @@
     "webpack": "^5.99.9",
     "webpack-cli": "^6.0.1"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "pnpm": {
+    "overrides": {
+      "fast-uri": "3.1.5",
+      "serialize-javascript": "7.0.3"
+    }
+  }
 }

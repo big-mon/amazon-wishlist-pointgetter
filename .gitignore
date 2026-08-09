@@ -118,3 +118,6 @@ dist
 
 # pnpm
 .pnpm-store/
+
+# Chrome extension package
+/extension.zip

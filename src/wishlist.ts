@@ -382,10 +382,10 @@ const observer = new MutationObserver((mutations) => {
   items.forEach((item) => {
     if (hrefChangedItems.has(item)) {
       cancelRetryTimer(item);
-      if (visibleItems.has(item)) {
-        processVisibleItem(item);
-        return;
-      }
+    }
+    if (visibleItems.has(item)) {
+      processVisibleItem(item);
+      return;
     }
     observeItem(item);
   });

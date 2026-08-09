@@ -205,6 +205,58 @@ const flushPromises = () => new Promise((resolve) => setImmediate(resolve));
 })();
 
 const main = async () => {
+  {
+    const item = new FakeItem({
+      href: "/dp/late-price-target",
+      selectors: {},
+    });
+    const wrapper = new FakeNode();
+    wrapper.querySelectorAll = (selector) => (selector === "li" ? [item] : []);
+    global.document.getElementById = (id) => (id === "g-items" ? wrapper : null);
+
+    let attempts = 0;
+    doWishlist({
+      fetcher: async () => {
+        attempts += 1;
+        return pointResult("25pt");
+      },
+    });
+
+    intersectionObserverCallback([{ isIntersecting: true, target: item }]);
+    await flushPromises();
+    assert.equal(attempts, 0, "waits to fetch until the price target exists");
+
+    const pointTarget = new FakeNode();
+    item.appendChild(pointTarget);
+    item.selectors[".price-section .a-price"] = pointTarget;
+    mutationObserverCallback([
+      { addedNodes: [pointTarget], target: item, type: "childList" },
+    ]);
+    await flushPromises();
+
+    assert.equal(
+      attempts,
+      1,
+      "fetches a visible item when mutation discovery finds its late price target",
+    );
+    assert.equal(
+      countPointBadges(pointTarget),
+      1,
+      "renders points without another intersection callback",
+    );
+
+    const pointBadge = pointTarget.children.find(
+      (child) => child.attributes["data-devola-element"] === "points",
+    );
+    mutationObserverCallback([
+      { addedNodes: [pointBadge], target: pointTarget, type: "childList" },
+    ]);
+    await flushPromises();
+    assert.equal(attempts, 1, "ignores its own point-display mutation");
+
+    cleanup();
+  }
+
   for (const [configuredDelay, expectedDelay] of [
     [10, 250],
     [60_000, 30_000],

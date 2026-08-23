@@ -2,7 +2,10 @@
   "name": "Anthropic Claude Code",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu24.04",
   "features": {
-    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "24",
+      "pnpmVersion": "11.23.0"
+    },
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers-community/npm-features/typescript": {}
   },

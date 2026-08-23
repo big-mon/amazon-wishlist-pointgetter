@@ -9,7 +9,7 @@
 
 pushに複数commitが含まれる場合も、直前の1 commitではなくpush前のSHAとHEADを比較します。`before` が未設定または全ゼロ、commitまたはその `package.json` を取得できない場合は、意図しない公開を避けるため安全にskipします。
 
-公開前に pnpm 9.15.9 で固定ロックファイルから依存関係をインストールし、テスト、型チェック、クリーンな本番buildとzip作成を順に実行します。`package.json` のバージョンを変更するときは `pnpm sync-version` を実行し、`public/manifest.json` も同じバージョンにしてください。タグのpushだけではこのワークフローは起動しません。
+公開前に pnpm 11.23.0 で固定ロックファイルから依存関係をインストールし、テスト、型チェック、クリーンな本番buildとzip作成を順に実行します。`package.json` のバージョンを変更するときは `pnpm sync-version` を実行し、`public/manifest.json` も同じバージョンにしてください。タグのpushだけではこのワークフローは起動しません。
 
 ## Chrome Web Store とOAuthの準備
 
@@ -38,16 +38,16 @@ Repository Settings > Secrets and variables > Actionsに次を登録します。
 
 前提:
 
-- Node.js 20以上
-- pnpm 9.15.9
+- Node.js 24以上
+- pnpm 11.23.0
 - Chrome Web Storeで既に登録済みのitemと、上記OAuth認証情報
 
 ```bash
 if command -v corepack >/dev/null 2>&1; then
   corepack enable
-  corepack prepare pnpm@9.15.9 --activate
+  corepack prepare pnpm@11.23.0 --activate
 else
-  npm install --global pnpm@9.15.9
+  npm install --global pnpm@11.23.0
 fi
 
 pnpm install --frozen-lockfile
@@ -56,7 +56,7 @@ pnpm type-check
 pnpm zip
 ```
 
-`package.json` の `packageManager` も `pnpm@9.15.9` に固定されています。Node.js 20以上でもCorepackが同梱または有効とは限らないため、Corepackコマンドが存在しない環境では上記npm fallbackを使用してください。
+`package.json` の `packageManager` も `pnpm@11.23.0` に固定されています。Node.js 24以上でもCorepackが同梱または有効とは限らないため、Corepackコマンドが存在しない環境では上記npm fallbackを使用してください。
 
 本番buildは最初に `dist/` 全体を削除し、外部source mapを含めずに再生成します。`pnpm zip` は既存の `extension.zip` と `dist/` を削除し、クリーンな本番buildを実行して、現在の `dist/` のファイルだけを決定的な順序と固定metadataでarchiveへ格納します。OSの `zip` コマンドは不要です。
 

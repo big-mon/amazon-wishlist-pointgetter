@@ -2,9 +2,9 @@
   "name": "amazon-wishlist-pointgetter",
   "description": "Google Chrome Extension for Amazon.co.jp",
   "version": "1.5.7",
-  "packageManager": "pnpm@9.15.9",
+  "packageManager": "pnpm@11.23.0",
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=24.0.0"
   },
   "private": true,
   "license": "MIT",
@@ -30,13 +30,5 @@
     "typescript": "^6.0.3",
     "webpack": "^5.109.2",
     "webpack-cli": "^7.2.2"
-  },
-  "pnpm": {
-    "overrides": {
-      "ajv": "8.20.0",
-      "diff": "4.0.4",
-      "fast-uri": "3.1.5",
-      "serialize-javascript": "7.1.0"
-    }
   }
 }

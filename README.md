@@ -63,8 +63,8 @@ graph LR
 <summary>📋 開発環境の準備</summary>
 
 ### 必要な環境
-- **Node.js** 20+
-- **pnpm** 9.15.9（この正確なバージョンのみ）
+- **Node.js** 24+
+- **pnpm** 11.23.0（この正確なバージョンのみ）
 - **Git**
 
 ### ⚡ セットアップ手順
@@ -74,12 +74,12 @@ graph LR
 git clone git@github.com:big-mon/amazon-wishlist-pointgetter.git
 cd amazon-wishlist-pointgetter
 
-# 2. pnpm 9.15.9を用意（Node.js 20以上でもCorepackがない場合があります）
+# 2. pnpm 11.23.0を用意（Node.js 24以上でもCorepackがない場合があります）
 if command -v corepack >/dev/null 2>&1; then
   corepack enable
-  corepack prepare pnpm@9.15.9 --activate
+  corepack prepare pnpm@11.23.0 --activate
 else
-  npm install --global pnpm@9.15.9
+  npm install --global pnpm@11.23.0
 fi
 
 # 3. 依存関係を固定してインストール
@@ -118,7 +118,7 @@ pnpm dev
 ### 🧰 技術スタック
 - **言語**: TypeScript 5.x（正確な解決版はロックファイルを参照）
 - **ビルドツール**: Webpack 5（正確な解決版はロックファイルを参照）
-- **パッケージマネージャー**: pnpm 9.15.9
+- **パッケージマネージャー**: pnpm 11.23.0
 - **ターゲット**: ES2022
 - **Chrome拡張**: Manifest V3
 

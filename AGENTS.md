@@ -12,7 +12,7 @@ This repository builds Devola, a Manifest V3 Chrome extension for Amazon.co.jp w
 
 ## Toolchain and completion gates
 
-- Use exactly pnpm 9.15.9 and install with `pnpm install --frozen-lockfile` when the lockfile must not change.
+- Use Node.js 24 or newer and exactly pnpm 11.23.0; install with `pnpm install --frozen-lockfile` when the lockfile must not change.
 - `pnpm build` removes all previous `dist/` contents before a production build. `pnpm zip` also performs that clean production build and replaces `extension.zip`; do not package an existing `dist/` incrementally.
 - Before completing a change, run `pnpm test`, `pnpm type-check`, and `pnpm build`.
 - For dependency or release maintenance, also run `pnpm audit --audit-level high` and `pnpm zip` as relevant.

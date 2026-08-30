@@ -1,30 +1,13 @@
 const { lstatSync, readdirSync, readFileSync, rmSync, writeFileSync } = require("node:fs");
 const path = require("node:path");
+const { crc32 } = require("node:zlib");
 const { buildProduction } = require("./build-production");
 
 const projectRoot = path.resolve(__dirname, "..");
 
-const crcTable = Array.from({ length: 256 }, (_, value) => {
-  let crc = value;
-  for (let bit = 0; bit < 8; bit += 1) {
-    crc = (crc >>> 1) ^ (crc & 1 ? 0xedb88320 : 0);
-  }
-  return crc >>> 0;
-});
-
-const crc32 = (data) => {
-  let crc = 0xffffffff;
-  for (const byte of data) {
-    crc = (crc >>> 8) ^ crcTable[(crc ^ byte) & 0xff];
-  }
-  return (crc ^ 0xffffffff) >>> 0;
-};
-
-const comparePaths = (left, right) => (left < right ? -1 : left > right ? 1 : 0);
-
 const collectFiles = (directory, relativeDirectory = "") =>
   readdirSync(path.join(directory, relativeDirectory))
-    .sort(comparePaths)
+    .sort()
     .flatMap((name) => {
       const relativePath = path.join(relativeDirectory, name);
       const absolutePath = path.join(directory, relativePath);

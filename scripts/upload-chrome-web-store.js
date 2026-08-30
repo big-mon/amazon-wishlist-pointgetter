@@ -2,6 +2,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { setTimeout: sleep } = require("node:timers/promises");
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const API_ROOT = "https://chromewebstore.googleapis.com";
@@ -148,10 +149,6 @@ async function publishItem(itemPath, accessToken) {
       skipReview: false,
     }),
   });
-}
-
-async function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function waitForUploadResult(itemPath, accessToken) {

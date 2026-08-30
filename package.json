@@ -1,7 +1,7 @@
 {
   "name": "amazon-wishlist-pointgetter",
   "description": "Google Chrome Extension for Amazon.co.jp",
-  "version": "1.5.7",
+  "version": "1.5.8",
   "packageManager": "pnpm@11.23.0",
   "engines": {
     "node": ">=24.0.0"

@@ -8,7 +8,6 @@ class FakeNode {
     this.parentElement = null;
     this.className = "";
     this.textContent = "";
-    this.innerHTML = "";
   }
 
   appendChild(child) {
@@ -90,10 +89,6 @@ class FakeItem extends FakeNode {
   }
 }
 
-global.window = {
-  addEventListener: () => {},
-};
-
 global.location = {
   protocol: "https:",
   host: "www.amazon.co.jp",
@@ -119,20 +114,11 @@ let intersectionObserverCallback;
 global.IntersectionObserver = class {
   constructor(callback) {
     intersectionObserverCallback = callback;
-    this.observedItems = new Set();
   }
 
-  observe(item) {
-    this.observedItems.add(item);
-  }
-
-  unobserve(item) {
-    this.observedItems.delete(item);
-  }
-
-  disconnect() {
-    this.observedItems.clear();
-  }
+  observe() {}
+  unobserve() {}
+  disconnect() {}
 };
 
 const {

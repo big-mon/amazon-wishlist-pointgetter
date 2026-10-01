@@ -21,9 +21,10 @@ This repository builds Devola, a Manifest V3 Chrome extension for Amazon.co.jp w
 
 ## Sources of truth
 
-- Commands and dependency policy: `package.json` and `pnpm-lock.yaml`
+- Commands and dependency policy: `package.json`, `pnpm-lock.yaml`, and `pnpm-workspace.yaml`
 - Extension scope, permissions, and packaged entry point: `public/manifest.json`
 - Runtime behavior and selectors: `src/` plus `tests/`
 - CI and publishing conditions: `.github/workflows/`
 - Chrome Web Store environment contract: `.env.example` and `scripts/upload-chrome-web-store.js`
 - Human setup and release instructions: `README.md` and `DEPLOYMENT.md`
+- User-facing data handling: `PRIVACY_POLICY.md`, checked against `src/` and `public/manifest.json`

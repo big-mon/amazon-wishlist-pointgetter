@@ -9,11 +9,11 @@
 
 pushに複数commitが含まれる場合も、直前の1 commitではなくpush前のSHAとHEADを比較します。`before` が未設定または全ゼロ、commitまたはその `package.json` を取得できない場合は、意図しない公開を避けるため安全にskipします。
 
-公開前に pnpm 11.23.0 で固定ロックファイルから依存関係をインストールし、テスト、型チェック、クリーンな本番buildとzip作成を順に実行します。`package.json` のバージョンを変更するときは `pnpm sync-version` を実行し、`public/manifest.json` も同じバージョンにしてください。タグのpushだけではこのワークフローは起動しません。
+公開前に pnpm 11.23.0 で固定ロックファイルから依存関係をインストールし、テスト、型チェック、依存関係の脆弱性確認、クリーンな本番buildとzip作成を順に実行します。`package.json` のバージョンを変更するときは `pnpm sync-version` を実行し、`public/manifest.json` も同じバージョンにしてください。タグのpushだけではこのワークフローは起動しません。
 
 ## Chrome Web Store とOAuthの準備
 
-1. Chrome Web Store Developer Dashboardで拡張機能を登録します。初回アップロード、Store listing、Privacyの入力は手動で完了してください。
+1. 公開を担当するGoogleアカウントの2段階認証を有効にし、Chrome Web Store Developer Dashboardで拡張機能を登録します。初回アップロード、Store listing、Privacyの入力は手動で完了してください。
 2. Publisher > SettingsでPublisher IDを確認します。複数Publisherに所属する場合は対象を切り替えてから確認してください。
 3. Google CloudプロジェクトでChrome Web Store APIを有効化します。
 4. OAuth同意画面を設定します。ExternalでTestingを使う場合は、公開を担当するGoogleアカウントをテストユーザーに追加します。
@@ -43,20 +43,15 @@ Repository Settings > Secrets and variables > Actionsに次を登録します。
 - Chrome Web Storeで既に登録済みのitemと、上記OAuth認証情報
 
 ```bash
-if command -v corepack >/dev/null 2>&1; then
-  corepack enable
-  corepack prepare pnpm@11.23.0 --activate
-else
-  npm install --global pnpm@11.23.0
-fi
-
+npm install --global pnpm@11.23.0
 pnpm install --frozen-lockfile
 pnpm test
 pnpm type-check
+pnpm audit --audit-level high
 pnpm zip
 ```
 
-`package.json` の `packageManager` も `pnpm@11.23.0` に固定されています。Corepackが同梱または有効とは限らないため、Corepackコマンドが存在しない環境では上記npm fallbackを使用してください。
+`package.json` の `packageManager` も `pnpm@11.23.0` に固定されています。miseを利用している場合は、READMEのセットアップ手順を使用できます。
 
 本番buildは最初に `dist/` 全体を削除し、外部source mapを含めずに再生成します。`pnpm zip` は既存の `extension.zip` と `dist/` を削除し、クリーンな本番buildを実行して、現在の `dist/` のファイルだけを決定的な順序と固定metadataでarchiveへ格納します。OSの `zip` コマンドは不要です。
 
@@ -66,11 +61,13 @@ uploadスクリプトが読む環境変数:
 - 任意: `CHROME_EXTENSION_ZIP_PATH`（既定 `extension.zip`）
 - 任意: `CHROME_PUBLISH`（既定 `true`; `false` ならupload後にpublishしない）
 
-値は `.env.example` を参考にshellまたは安全なsecret管理から設定し、次を実行します。
+値は `.env.example` を参考にshellの環境変数または安全なsecret管理から設定します。このスクリプトは `.env` ファイルを自動では読み込みません。uploadだけを行う場合は次を実行します。
 
 ```bash
-pnpm deploy-chrome
+CHROME_PUBLISH=false pnpm deploy-chrome
 ```
+
+審査へ提出する場合は `CHROME_PUBLISH=true pnpm deploy-chrome` を実行します。指定を省略してもpublishするため、uploadのみの場合は必ず `false` を指定してください。
 
 ## 注意事項
 

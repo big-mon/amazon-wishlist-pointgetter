@@ -1,5 +1,2 @@
-overrides:
-  ajv: 8.20.0
-  diff: 4.0.4
-  fast-uri: 3.1.7
-  serialize-javascript: 7.1.1
+allowBuilds:
+  esbuild@0.28.2: true

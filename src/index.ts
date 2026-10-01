@@ -1,3 +1,3 @@
-import { doWishlist } from "./wishlist";
+import { doWishlist } from "./wishlist.ts";
 
 doWishlist();

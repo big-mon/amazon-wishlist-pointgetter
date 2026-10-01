@@ -63,7 +63,7 @@ graph LR
 <summary>📋 開発環境の準備</summary>
 
 ### 必要な環境
-- **Node.js** 24+
+- **Node.js** 24 LTS（24.12.0以上の24.x）
 - **pnpm** 11.23.0（この正確なバージョンのみ）
 - **Git**
 
@@ -74,7 +74,7 @@ graph LR
 git clone git@github.com:big-mon/amazon-wishlist-pointgetter.git
 cd amazon-wishlist-pointgetter
 
-# 2. pnpm 11.23.0を用意（Node.js 24以上でもCorepackがない場合があります）
+# 2. pnpm 11.23.0を用意（Corepackがない場合があります）
 if command -v corepack >/dev/null 2>&1; then
   corepack enable
   corepack prepare pnpm@11.23.0 --activate
@@ -88,6 +88,8 @@ pnpm install --frozen-lockfile
 # 4. 開発ビルド実行
 pnpm dev
 ```
+
+miseを利用する場合は、`mise trust`、`mise install` で `mise.toml` のNode.js/pnpmを用意できます。CIは `.node-version` の24 LTSを使用します。
 
 ### 🎛️ 利用可能なコマンド
 
@@ -117,10 +119,14 @@ pnpm dev
 
 ### 🧰 技術スタック
 - **言語**: TypeScript 6.x（正確な解決版はロックファイルを参照）
-- **ビルドツール**: Webpack 5（正確な解決版はロックファイルを参照）
+- **ビルドツール**: esbuild（正確な解決版はロックファイルを参照）
 - **パッケージマネージャー**: pnpm 11.23.0
 - **ターゲット**: ES2022
 - **Chrome拡張**: Manifest V3
+
+テストはNode.jsの標準TypeScript実行、ビルドはesbuildで単一のcontent scriptを生成し、Node.jsで静的ファイルをコピーします。型チェックは `pnpm type-check` で別途実行します。ソースでは型消去で実行できる構文を使用してください（enum、実行コードを持つnamespace、parameter propertyは使用しません）。Huskyのcommit hookは `package.json` とmanifestのversionを同期します。
+
+esbuildを更新するときは、`package.json` の固定バージョンと `pnpm-workspace.yaml` の `allowBuilds` を揃えてください。installスクリプトはそのバージョンの実行ファイルを検証します。
 
 ### 📁 プロジェクト構造
 ```
@@ -134,7 +140,7 @@ pnpm dev
 │   ├── 📂 _locales/         # 多言語対応ファイル
 │   └── 📂 images/           # アイコン画像
 ├── 📂 dist/                 # ビルド成果物（自動生成）
-└── 📄 webpack.config.js     # Webpack設定
+└── 📂 scripts/              # ビルド・配布スクリプト
 ```
 
 ### 🎯 技術的なポイント

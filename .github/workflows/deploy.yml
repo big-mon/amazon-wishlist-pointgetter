@@ -64,7 +64,7 @@ jobs:
         if: steps.version-check.outputs.version-changed == 'true'
         uses: actions/setup-node@v7.0.0
         with:
-          node-version: 24
+          node-version-file: .node-version
           
       - name: Setup pnpm
         if: steps.version-check.outputs.version-changed == 'true'
@@ -83,6 +83,10 @@ jobs:
       - name: Type-check
         if: steps.version-check.outputs.version-changed == 'true'
         run: pnpm type-check
+
+      - name: Audit dependencies
+        if: steps.version-check.outputs.version-changed == 'true'
+        run: pnpm audit --audit-level high
         
       - name: Clean build and create zip file
         if: steps.version-check.outputs.version-changed == 'true'

@@ -38,7 +38,7 @@ Repository Settings > Secrets and variables > Actionsに次を登録します。
 
 前提:
 
-- Node.js 24以上
+- Node.js 24 LTS（24.12.0以上の24.x）
 - pnpm 11.23.0
 - Chrome Web Storeで既に登録済みのitemと、上記OAuth認証情報
 
@@ -56,7 +56,7 @@ pnpm type-check
 pnpm zip
 ```
 
-`package.json` の `packageManager` も `pnpm@11.23.0` に固定されています。Node.js 24以上でもCorepackが同梱または有効とは限らないため、Corepackコマンドが存在しない環境では上記npm fallbackを使用してください。
+`package.json` の `packageManager` も `pnpm@11.23.0` に固定されています。Corepackが同梱または有効とは限らないため、Corepackコマンドが存在しない環境では上記npm fallbackを使用してください。
 
 本番buildは最初に `dist/` 全体を削除し、外部source mapを含めずに再生成します。`pnpm zip` は既存の `extension.zip` と `dist/` を削除し、クリーンな本番buildを実行して、現在の `dist/` のファイルだけを決定的な順序と固定metadataでarchiveへ格納します。OSの `zip` コマンドは不要です。
 

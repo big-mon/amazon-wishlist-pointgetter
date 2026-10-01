@@ -12,7 +12,7 @@ Amazon.co.jp以外には対応していません。Amazonの公式拡張機能�
 
 ## 開発
 
-Node.js 24 LTS（24.12.0以上の24.x）とpnpm 11.23.0を使用します。miseを使う場合は、このディレクトリで `mise trust`、`mise install` を実行して `mise.toml` のツールを有効にしてください。pnpmを個別に用意する場合は `npm install --global pnpm@11.23.0` を使用できます。
+Node.js 24 LTS（24.12.0以上の24.x）とpnpm 12.8.2を使用します。miseを使う場合は、このディレクトリで `mise trust`、`mise install` を実行して `mise.toml` のツールを有効にしてください。pnpmを個別に用意する場合は `npm install --global pnpm@12.8.2` を使用できます。
 
 ```bash
 git clone https://github.com/big-mon/amazon-wishlist-pointgetter.git

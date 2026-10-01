@@ -9,7 +9,7 @@
 
 pushに複数commitが含まれる場合も、直前の1 commitではなくpush前のSHAとHEADを比較します。`before` が未設定または全ゼロ、commitまたはその `package.json` を取得できない場合は、意図しない公開を避けるため安全にskipします。
 
-公開前に pnpm 11.23.0 で固定ロックファイルから依存関係をインストールし、テスト、型チェック、依存関係の脆弱性確認、クリーンな本番buildとzip作成を順に実行します。`package.json` のバージョンを変更するときは `pnpm sync-version` を実行し、`public/manifest.json` も同じバージョンにしてください。タグのpushだけではこのワークフローは起動しません。
+公開前に pnpm 12.8.2 で固定ロックファイルから依存関係をインストールし、テスト、型チェック、依存関係の脆弱性確認、クリーンな本番buildとzip作成を順に実行します。`package.json` のバージョンを変更するときは `pnpm sync-version` を実行し、`public/manifest.json` も同じバージョンにしてください。タグのpushだけではこのワークフローは起動しません。
 
 ## Chrome Web Store とOAuthの準備
 
@@ -39,11 +39,11 @@ Repository Settings > Secrets and variables > Actionsに次を登録します。
 前提:
 
 - Node.js 24 LTS（24.12.0以上の24.x）
-- pnpm 11.23.0
+- pnpm 12.8.2
 - Chrome Web Storeで既に登録済みのitemと、上記OAuth認証情報
 
 ```bash
-npm install --global pnpm@11.23.0
+npm install --global pnpm@12.8.2
 pnpm install --frozen-lockfile
 pnpm test
 pnpm type-check
@@ -51,7 +51,7 @@ pnpm audit --audit-level high
 pnpm zip
 ```
 
-`package.json` の `packageManager` も `pnpm@11.23.0` に固定されています。miseを利用している場合は、READMEのセットアップ手順を使用できます。
+`package.json` の `packageManager` も `pnpm@12.8.2` に固定されています。miseを利用している場合は、READMEのセットアップ手順を使用できます。
 
 本番buildは最初に `dist/` 全体を削除し、外部source mapを含めずに再生成します。`pnpm zip` は既存の `extension.zip` と `dist/` を削除し、クリーンな本番buildを実行して、現在の `dist/` のファイルだけを決定的な順序と固定metadataでarchiveへ格納します。OSの `zip` コマンドは不要です。
 

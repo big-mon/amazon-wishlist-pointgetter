@@ -1,10 +1,10 @@
 {
   "name": "amazon-wishlist-pointgetter",
   "description": "Google Chrome Extension for Amazon.co.jp",
-  "version": "1.5.8",
-  "packageManager": "pnpm@11.23.0",
+  "version": "1.6.0",
+  "packageManager": "pnpm@12.8.2",
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=24.12.0 <25"
   },
   "private": true,
   "license": "MIT",
@@ -12,10 +12,10 @@
   "author": "BIG-MON <> (https://github.com/big-mon)",
   "scripts": {
     "build": "node scripts/build-production.js",
-    "dev": "webpack --mode=development",
-    "watch": "webpack --watch --mode=development",
+    "dev": "node scripts/build-production.js --development",
+    "watch": "node scripts/build-production.js --watch",
     "clean": "rm -rf dist",
-    "test": "node -r ts-node/register/transpile-only tests/util.test.js && node -r ts-node/register/transpile-only tests/wishlist.test.js && node tests/webpack-config.test.js && node tests/package-extension.test.js",
+    "test": "node tests/util.test.js && node tests/wishlist.test.js && node tests/build.test.js && node tests/package-extension.test.js",
     "type-check": "tsc --noEmit",
     "deploy-chrome": "node scripts/upload-chrome-web-store.js",
     "zip": "node scripts/package-extension.js",
@@ -23,12 +23,8 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "copy-webpack-plugin": "^14.0.0",
+    "esbuild": "0.28.2",
     "husky": "^9.1.7",
-    "ts-loader": "^9.6.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^6.0.3",
-    "webpack": "^5.110.3",
-    "webpack-cli": "^7.2.3"
+    "typescript": "^6.0.3"
   }
 }

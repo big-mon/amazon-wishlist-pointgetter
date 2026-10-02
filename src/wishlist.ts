@@ -3,7 +3,7 @@ import {
   fetchPointsWithRetry,
   type PointsFetcher,
   type RetryWait,
-} from "./util";
+} from "./util.ts";
 
 const extensionElementSelector = "[data-devola-element]";
 

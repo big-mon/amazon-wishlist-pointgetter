@@ -127,7 +127,7 @@ const {
   editItem,
   findWishlistItemsInMutation,
   findWishlistPointTarget,
-} = require("../src/wishlist");
+} = require("../src/wishlist.ts");
 
 const countPointBadges = (target) =>
   target.children.filter(

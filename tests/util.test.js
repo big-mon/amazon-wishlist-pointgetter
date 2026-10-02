@@ -1,5 +1,5 @@
 const assert = require("node:assert/strict");
-const { fetchPoints, fetchPointsWithRetry, findPointNode } = require("../src/util");
+const { fetchPoints, fetchPointsWithRetry, findPointNode } = require("../src/util.ts");
 
 const createElement = ({ textContent = "", parentTextContent, closestTextContent } = {}) => ({
   textContent,

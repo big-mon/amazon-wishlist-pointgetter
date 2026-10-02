@@ -4,10 +4,9 @@
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
       "version": "24",
-      "pnpmVersion": "11.23.0"
+      "pnpmVersion": "12.8.2"
     },
-    "ghcr.io/devcontainers/features/github-cli:1": {},
-    "ghcr.io/devcontainers-community/npm-features/typescript": {}
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   },
   "postCreateCommand": "npm install -g @anthropic-ai/claude-code@latest",
   "customizations": {

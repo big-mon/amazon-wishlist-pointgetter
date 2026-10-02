@@ -12,7 +12,8 @@ This repository builds Devola, a Manifest V3 Chrome extension for Amazon.co.jp w
 
 ## Toolchain and completion gates
 
-- Use Node.js 24 or newer and exactly pnpm 11.23.0; install with `pnpm install --frozen-lockfile` when the lockfile must not change.
+- Use Node.js 24 LTS (24.12.0 or newer within 24.x) and exactly pnpm 12.8.2; install with `pnpm install --frozen-lockfile` when the lockfile must not change. CI reads `.node-version`; `mise.toml` and the devcontainer use the same Node/pnpm versions.
+- Tests run TypeScript through Node's native type stripping; esbuild bundles the browser script and Node copies public assets. Keep source syntax erasable and retain a separate `pnpm type-check` gate.
 - `pnpm build` removes all previous `dist/` contents before a production build. `pnpm zip` also performs that clean production build and replaces `extension.zip`; do not package an existing `dist/` incrementally.
 - Before completing a change, run `pnpm test`, `pnpm type-check`, and `pnpm build`.
 - For dependency or release maintenance, also run `pnpm audit --audit-level high` and `pnpm zip` as relevant.
@@ -20,9 +21,10 @@ This repository builds Devola, a Manifest V3 Chrome extension for Amazon.co.jp w
 
 ## Sources of truth
 
-- Commands and dependency policy: `package.json` and `pnpm-lock.yaml`
+- Commands and dependency policy: `package.json`, `pnpm-lock.yaml`, and `pnpm-workspace.yaml`
 - Extension scope, permissions, and packaged entry point: `public/manifest.json`
 - Runtime behavior and selectors: `src/` plus `tests/`
 - CI and publishing conditions: `.github/workflows/`
 - Chrome Web Store environment contract: `.env.example` and `scripts/upload-chrome-web-store.js`
 - Human setup and release instructions: `README.md` and `DEPLOYMENT.md`
+- User-facing data handling: `PRIVACY_POLICY.md`, checked against `src/` and `public/manifest.json`

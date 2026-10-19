@@ -342,6 +342,11 @@ const parseCases = [
     html: '<div id="points_feature_div"><span class="a-color-price">40&nbsp;pt</span></div>',
     expected: "40pt",
   },
+  {
+    name: "reads a point value wrapped in fullwidth parentheses",
+    html: '<div id="points_feature_div"><span class="a-color-price">62ポイント（2.5%）</span></div>',
+    expected: "62ポイント（2.5%）",
+  },
 ];
 
 for (const testCase of parseCases) {

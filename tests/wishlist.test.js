@@ -336,6 +336,44 @@ const main = async () => {
   }
 
   {
+    const item = new FakeItem({
+      href: "/dp/offscreen-cap",
+      selectors: {
+        ".price-section .a-price": new FakeNode(),
+      },
+    });
+    const wrapper = new FakeNode();
+    wrapper.querySelectorAll = (selector) => (selector === "li" ? [item] : []);
+    global.document.getElementById = (id) => (id === "g-items" ? wrapper : null);
+
+    let attempts = 0;
+    const scheduled = [];
+    doWishlist({
+      fetcher: async () => {
+        attempts += 1;
+        return transientFailure;
+      },
+      retryWait: async () => {},
+      scheduleRetry: (callback, delay) => {
+        const timer = { callback, delay };
+        scheduled.push(timer);
+        return timer;
+      },
+    });
+
+    for (let entry = 0; entry < 3; entry += 1) {
+      intersectionObserverCallback([{ isIntersecting: true, target: item }]);
+      intersectionObserverCallback([{ isIntersecting: false, target: item }]);
+      await flushPromises();
+    }
+
+    assert.equal(attempts, 6, "counts a failed cycle that finishes off screen");
+    assert.equal(scheduled.length, 0, "does not leave a retry timer on a hidden item");
+
+    cleanup();
+  }
+
+  {
     const pointTarget = new FakeNode();
     const originalAppend = pointTarget.appendChild.bind(pointTarget);
     pointTarget.appendChild = (child) => {
@@ -769,6 +807,53 @@ const main = async () => {
 
     assert.equal(attempts, 2, "reprocesses an item when its point badge is removed");
     assert.equal(countPointBadges(pointTarget), 1, "restores the removed point badge");
+  }
+
+  {
+    const pointTarget = new FakeNode();
+    const item = new FakeItem({
+      href: "/dp/restore-removed-points",
+      selectors: {
+        ".price-section .a-price": pointTarget,
+      },
+    });
+    item.appendChild(pointTarget);
+    const wrapper = new FakeNode();
+    wrapper.querySelectorAll = (selector) => (selector === "li" ? [item] : []);
+    global.document.getElementById = (id) => (id === "g-items" ? wrapper : null);
+
+    let attempts = 0;
+    doWishlist({
+      fetcher: async () => {
+        attempts += 1;
+        return pointResult("30pt");
+      },
+      retryWait: async () => {},
+    });
+
+    intersectionObserverCallback([{ isIntersecting: true, target: item }]);
+    await flushPromises();
+    assert.equal(attempts, 1, "fetches once before the point display is removed");
+    assert.equal(countPointBadges(pointTarget), 1, "renders the point display");
+
+    const pointBadge = pointTarget.children.find(
+      (child) => child.attributes["data-devola-element"] === "points",
+    );
+    pointBadge.remove();
+    mutationObserverCallback([
+      {
+        type: "childList",
+        addedNodes: [],
+        removedNodes: [pointBadge],
+        target: pointTarget,
+      },
+    ]);
+    await flushPromises();
+
+    assert.equal(attempts, 2, "fetches again when only the point display is removed");
+    assert.equal(countPointBadges(pointTarget), 1, "restores the point display from that removal");
+
+    cleanup();
   }
 
   {

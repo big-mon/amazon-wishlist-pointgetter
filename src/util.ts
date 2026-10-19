@@ -119,7 +119,7 @@ function looksLikePointText(text: string | null | undefined): boolean {
   if (!text) return false;
 
   const normalized = trimText(text);
-  return /^\d[\d,]*(?:pt|ポイント)(?:\([^)]*\))?$/i.test(normalized);
+  return /^\d[\d,]*(?:pt|ポイント)(?:[(（][^)）]*[)）])?$/i.test(normalized);
 }
 
 /** 文字列トリム

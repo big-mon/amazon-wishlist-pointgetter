@@ -199,6 +199,10 @@ const scheduleRetryCycle = (item: HTMLElement, href: string) => {
   }
 
   cancelRetryTimer(item);
+  if (!visibleItems.has(item)) {
+    retryCycleCounts.set(item, { href, used: used + 1, stopped: false });
+    return true;
+  }
 
   const timer = runtimeOptions.scheduleRetry(() => {
     const pending = retryTimers.get(item);
@@ -259,7 +263,7 @@ const processVisibleItem = (item: HTMLElement) => {
       return;
     }
 
-    if (visibleItems.has(item) && !scheduleRetryCycle(item, href)) {
+    if (!scheduleRetryCycle(item, href)) {
       intersectionObserver?.unobserve(item);
     }
   });
@@ -382,19 +386,22 @@ export const findWishlistItemsInMutation = (
   return items;
 };
 
-const isExtensionNode = (node: Node) =>
-  node instanceof HTMLElement && node.getAttribute("data-devola-element") !== null;
+const isLoadingSpinner = (node: Node) =>
+  node instanceof HTMLElement && node.getAttribute("data-devola-element") === "loading";
 
 const observer = new MutationObserver((mutations) => {
   const items = new Set<HTMLElement>();
   const hrefChangedItems = new Set<HTMLElement>();
 
   mutations.forEach((mutation) => {
-    const changedNodes = [
-      ...mutation.addedNodes,
-      ...(mutation.removedNodes ?? []),
-    ];
-    if (changedNodes.length > 0 && changedNodes.every(isExtensionNode)) return;
+    const removedNodes = [...(mutation.removedNodes ?? [])];
+    if (
+      mutation.addedNodes.length === 0 &&
+      removedNodes.length > 0 &&
+      removedNodes.every(isLoadingSpinner)
+    ) {
+      return;
+    }
 
     findWishlistItemsInMutation(mutation).forEach((item) => {
       items.add(item);

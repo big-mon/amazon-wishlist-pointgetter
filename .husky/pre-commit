@@ -1,11 +1,11 @@
 # バージョン同期
 echo "🔄 Syncing version between package.json and manifest.json..."
 manifest=public/manifest.json
-before=$(node -e 'process.stdout.write(String(JSON.parse(require("fs").readFileSync("public/manifest.json","utf8")).version))')
 node scripts/sync-version.js
+indexed=$(git show ":$manifest" | node -e 'let s="";process.stdin.on("data",c=>s+=c);process.stdin.on("end",()=>process.stdout.write(String(JSON.parse(s).version)))')
 after=$(node -e 'process.stdout.write(String(JSON.parse(require("fs").readFileSync("public/manifest.json","utf8")).version))')
 
-# バージョンが変わったときだけステージする
-if [ "$before" != "$after" ]; then
+# インデックスの版と違うときだけステージする
+if [ "$indexed" != "$after" ]; then
   git add "$manifest"
 fi

@@ -31,7 +31,7 @@ const itemGenerations = new WeakMap<HTMLElement, ItemGeneration>();
 let visibleItems = new WeakSet<HTMLElement>();
 type ProcessedItemState = {
   href: string;
-  outcome: "points" | "no-points" | "terminal-failure";
+  outcome: "points" | "terminal-failure";
 };
 const processedItems = new WeakMap<HTMLElement, ProcessedItemState>();
 
@@ -66,8 +66,15 @@ const defaultRuntimeOptions: ResolvedWishlistRuntimeOptions = {
 
 let runtimeOptions: ResolvedWishlistRuntimeOptions = defaultRuntimeOptions;
 const retryTimers = new Map<HTMLElement, { href: string; timer: RetryTimer }>();
+type RetryCycleState = {
+  href: string;
+  used: number;
+  stopped: boolean;
+};
+let retryCycleCounts = new WeakMap<HTMLElement, RetryCycleState>();
 const minimumRetryCycleDelayMs = 250;
 const maximumRetryCycleDelayMs = 30_000;
+const maximumRetryCycles = 1;
 
 const getDomain = () => `${location.protocol}//${location.host}`;
 
@@ -178,7 +185,19 @@ const boundedRetryCycleDelay = () =>
     Math.min(maximumRetryCycleDelayMs, runtimeOptions.retryCycleDelayMs),
   );
 
+const retriesExhausted = (item: HTMLElement, href: string) =>
+  retryCycleCounts.get(item)?.href === href && retryCycleCounts.get(item)?.stopped === true;
+
 const scheduleRetryCycle = (item: HTMLElement, href: string) => {
+  const current = retryCycleCounts.get(item);
+  const sameHref = current?.href === href;
+  const used = sameHref ? current.used : 0;
+  if (sameHref && current.stopped) return false;
+  if (used >= maximumRetryCycles) {
+    retryCycleCounts.set(item, { href, used, stopped: true });
+    return false;
+  }
+
   cancelRetryTimer(item);
 
   const timer = runtimeOptions.scheduleRetry(() => {
@@ -192,12 +211,18 @@ const scheduleRetryCycle = (item: HTMLElement, href: string) => {
   }, boundedRetryCycleDelay());
 
   retryTimers.set(item, { href, timer });
+  retryCycleCounts.set(item, { href, used: used + 1, stopped: false });
+  return true;
 };
 
 const processVisibleItem = (item: HTMLElement) => {
   if (!visibleItems.has(item)) return;
 
   const href = findWishlistUrlElement(item)?.getAttribute("href") ?? null;
+  if (href && retriesExhausted(item, href)) {
+    intersectionObserver?.unobserve(item);
+    return;
+  }
   const processing = processingItems.get(item);
   if (processing?.href === href) return;
 
@@ -234,14 +259,15 @@ const processVisibleItem = (item: HTMLElement) => {
       return;
     }
 
-    if (visibleItems.has(item)) {
-      scheduleRetryCycle(item, href);
+    if (visibleItems.has(item) && !scheduleRetryCycle(item, href)) {
+      intersectionObserver?.unobserve(item);
     }
   });
 };
 
 const observeItem = (item: HTMLElement) => {
   const href = findWishlistUrlElement(item)?.getAttribute("href") ?? null;
+  if (href && retriesExhausted(item, href)) return;
   if (!needsProcessing(item, href) || processingItems.get(item)?.href === href) return;
   intersectionObserver?.observe(item);
 };
@@ -282,13 +308,9 @@ export const editItem = async (
     }
     if (result.kind === "success" && result.points !== "") {
       priceTarget.appendChild(createPointDisplay(result.points));
-    }
-    if (result.kind === "success") {
       completed = true;
-      processedItems.set(item, {
-        href,
-        outcome: result.points === "" ? "no-points" : "points",
-      });
+      processedItems.set(item, { href, outcome: "points" });
+      retryCycleCounts.delete(item);
     } else if (result.kind === "terminal-failure") {
       completed = true;
       processedItems.set(item, { href, outcome: "terminal-failure" });
@@ -360,11 +382,20 @@ export const findWishlistItemsInMutation = (
   return items;
 };
 
+const isExtensionNode = (node: Node) =>
+  node instanceof HTMLElement && node.getAttribute("data-devola-element") !== null;
+
 const observer = new MutationObserver((mutations) => {
   const items = new Set<HTMLElement>();
   const hrefChangedItems = new Set<HTMLElement>();
 
   mutations.forEach((mutation) => {
+    const changedNodes = [
+      ...mutation.addedNodes,
+      ...(mutation.removedNodes ?? []),
+    ];
+    if (changedNodes.length > 0 && changedNodes.every(isExtensionNode)) return;
+
     findWishlistItemsInMutation(mutation).forEach((item) => {
       items.add(item);
       if (mutation.type === "attributes") {
@@ -392,6 +423,7 @@ export const cleanup = () => {
   }
   retryTimers.forEach(({ timer }) => runtimeOptions.cancelRetry(timer));
   retryTimers.clear();
+  retryCycleCounts = new WeakMap();
   visibleItems = new WeakSet<HTMLElement>();
   runtimeOptions = defaultRuntimeOptions;
   observer.disconnect();

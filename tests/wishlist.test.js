@@ -293,6 +293,147 @@ const main = async () => {
   }
 
   {
+    const item = new FakeItem({
+      href: "/dp/retry-cap",
+      selectors: {
+        ".price-section .a-price": new FakeNode(),
+      },
+    });
+    const wrapper = new FakeNode();
+    wrapper.querySelectorAll = (selector) => (selector === "li" ? [item] : []);
+    global.document.getElementById = (id) => (id === "g-items" ? wrapper : null);
+
+    let attempts = 0;
+    const scheduled = [];
+    doWishlist({
+      fetcher: async () => {
+        attempts += 1;
+        return transientFailure;
+      },
+      retryWait: async () => {},
+      scheduleRetry: (callback, delay) => {
+        const timer = { callback, delay };
+        scheduled.push(timer);
+        return timer;
+      },
+    });
+
+    intersectionObserverCallback([{ isIntersecting: true, target: item }]);
+    await flushPromises();
+    assert.equal(attempts, 3, "uses three attempts in the first cycle");
+    assert.equal(scheduled.length, 1, "schedules one retry cycle");
+
+    scheduled[0].callback();
+    await flushPromises();
+    assert.equal(attempts, 6, "runs the one allowed retry cycle");
+    assert.equal(scheduled.length, 1, "does not schedule another cycle after the cap");
+
+    intersectionObserverCallback([{ isIntersecting: true, target: item }]);
+    await flushPromises();
+    assert.equal(attempts, 6, "does not restart fetching after retries are exhausted");
+
+    cleanup();
+  }
+
+  {
+    const pointTarget = new FakeNode();
+    const originalAppend = pointTarget.appendChild.bind(pointTarget);
+    pointTarget.appendChild = (child) => {
+      const appended = originalAppend(child);
+      if (child.getAttribute("data-devola-element") !== "loading") return appended;
+
+      const originalRemove = child.remove.bind(child);
+      child.remove = () => {
+        originalRemove();
+        queueMicrotask(() => {
+          mutationObserverCallback([
+            {
+              type: "childList",
+              addedNodes: [],
+              removedNodes: [child],
+              target: pointTarget,
+            },
+          ]);
+        });
+      };
+      return appended;
+    };
+    const item = new FakeItem({
+      href: "/dp/retry-cap-mutation",
+      selectors: {
+        ".price-section .a-price": pointTarget,
+      },
+    });
+    item.appendChild(pointTarget);
+    const wrapper = new FakeNode();
+    wrapper.querySelectorAll = (selector) => (selector === "li" ? [item] : []);
+    global.document.getElementById = (id) => (id === "g-items" ? wrapper : null);
+
+    let attempts = 0;
+    const scheduled = [];
+    doWishlist({
+      fetcher: async () => {
+        attempts += 1;
+        return attempts > 12 ? terminalFailure(503) : transientFailure;
+      },
+      retryWait: async () => {},
+      scheduleRetry: (callback, delay) => {
+        const timer = { callback, delay };
+        scheduled.push(timer);
+        return timer;
+      },
+    });
+
+    intersectionObserverCallback([{ isIntersecting: true, target: item }]);
+    await flushPromises();
+    assert.equal(attempts, 3, "spinner removal does not start another fetch cycle");
+    assert.equal(scheduled.length, 1, "still schedules the one retry cycle");
+
+    scheduled[0].callback();
+    await flushPromises();
+    assert.equal(attempts, 6, "the scheduled cycle is the last one");
+    assert.equal(scheduled.length, 1, "spinner removal does not schedule further cycles");
+
+    cleanup();
+  }
+
+  {
+    const pointTarget = new FakeNode();
+    const item = new FakeItem({
+      href: "/dp/empty-points",
+      selectors: {
+        ".price-section .a-price": pointTarget,
+      },
+    });
+    const wrapper = new FakeNode();
+    wrapper.querySelectorAll = (selector) => (selector === "li" ? [item] : []);
+    global.document.getElementById = (id) => (id === "g-items" ? wrapper : null);
+
+    let attempts = 0;
+    const scheduled = [];
+    doWishlist({
+      fetcher: async () => {
+        attempts += 1;
+        return pointResult("");
+      },
+      retryWait: async () => {},
+      scheduleRetry: (callback, delay) => {
+        const timer = { callback, delay };
+        scheduled.push(timer);
+        return timer;
+      },
+    });
+
+    intersectionObserverCallback([{ isIntersecting: true, target: item }]);
+    await flushPromises();
+    assert.equal(attempts, 1, "fetches an empty result once in the first cycle");
+    assert.equal(scheduled.length, 1, "does not treat an empty result as final");
+    assert.equal(countPointBadges(pointTarget), 0, "does not render an empty point badge");
+
+    cleanup();
+  }
+
+  {
     const pointTarget = new FakeNode();
     const item = new FakeItem({
       href: "/dp/terminal-404",
@@ -694,12 +835,8 @@ const main = async () => {
     await editItem(item, fetcher);
     await editItem(item, fetcher);
 
-    assert.equal(attempts, 1, "keeps a successful no-points result terminal");
+    assert.equal(attempts, 2, "does not treat an empty result as terminal");
     assert.equal(countPointBadges(pointTarget), 0, "does not invent a no-points badge");
-
-    item.anchor.setAttribute("href", "/dp/B000000011");
-    await editItem(item, fetcher);
-    assert.equal(attempts, 2, "reprocesses a no-points item only after its href changes");
   }
 
   {

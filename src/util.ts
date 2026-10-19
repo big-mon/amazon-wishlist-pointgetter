@@ -16,10 +16,6 @@ export const fetchPoints: PointsFetcher = async (url) => {
     console.log("Fetching points for:", url);
 
     const response = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      },
       signal: AbortSignal.timeout(10_000),
     });
 
@@ -73,40 +69,15 @@ export const fetchPointsWithRetry = async (
 };
 
 const pointSelectors = [
-  {
-    selector: "#addToCart #pointsInsideBuyBox_feature_div span.a-color-price",
-  },
-  {
-    selector: "#addToCart #buyBoxInner span.a-color-price:not(.offer-price)",
-    matcher: isPointCandidate,
-  },
-  {
-    selector: ".loyalty-points .a-align-bottom",
-  },
-  {
-    selector: ".ebooks-aip-points-label .a-color-price",
-  },
-  {
-    selector: "#Ebooks-desktop-KINDLE_ALC-prices-loyaltyPoints .a-color-price",
-  },
-  {
-    selector: "#points_feature_div > .a-color-price",
-    matcher: isPointValueElement,
-  },
-  {
-    selector:
-      '[id*="point" i] .a-color-price, [class*="point" i] .a-color-price, [data-feature-name*="point" i] .a-color-price',
-    matcher: isPointValueElement,
-  },
-  {
-    selector:
-      '[id*="point" i] span, [class*="point" i] span, [data-feature-name*="point" i] span',
-    matcher: isPointValueElement,
-  },
-] as Array<{
-  selector: string;
-  matcher?: (element: Element) => boolean;
-}>;
+  "#addToCart #pointsInsideBuyBox_feature_div span.a-color-price",
+  "#addToCart #buyBoxInner span.a-color-price:not(.offer-price)",
+  ".loyalty-points .a-align-bottom",
+  ".ebooks-aip-points-label .a-color-price",
+  "#Ebooks-desktop-KINDLE_ALC-prices-loyaltyPoints .a-color-price",
+  "#points_feature_div > .a-color-price",
+  '[id*="point" i] .a-color-price, [class*="point" i] .a-color-price, [data-feature-name*="point" i] .a-color-price',
+  '[id*="point" i] span, [class*="point" i] span, [data-feature-name*="point" i] span',
+] as const;
 
 /** 商品ページからポイント部分を取得
  * @param data 商品ページHTML
@@ -129,10 +100,9 @@ export const parsePoints = (data: string): string => {
 };
 
 export const findPointNode = (root: ParentNode): Element | null => {
-  for (const { selector, matcher } of pointSelectors) {
-    const candidates = Array.from(root.querySelectorAll(selector));
-    for (const candidate of candidates) {
-      if (!matcher || matcher(candidate)) {
+  for (const selector of pointSelectors) {
+    for (const candidate of root.querySelectorAll(selector)) {
+      if (isPointValueElement(candidate)) {
         return candidate;
       }
     }
@@ -140,17 +110,6 @@ export const findPointNode = (root: ParentNode): Element | null => {
 
   return null;
 };
-
-function isPointCandidate(element: Element): boolean {
-  const texts = [
-    element.textContent,
-    element.parentElement?.textContent,
-    element.closest('[id*="point" i],[class*="point" i],[data-feature-name*="point" i]')
-      ?.textContent,
-  ];
-
-  return texts.some((text) => looksLikePointText(text));
-}
 
 function isPointValueElement(element: Element): boolean {
   return looksLikePointText(element.textContent);
@@ -160,11 +119,10 @@ function looksLikePointText(text: string | null | undefined): boolean {
   if (!text) return false;
 
   const normalized = trimText(text);
-  return /\d[\d,]*(pt|ポイント)/i.test(normalized);
+  return /^\d[\d,]*(?:pt|ポイント)(?:\([^)]*\))?$/i.test(normalized);
 }
 
 /** 文字列トリム
  * @param text トリムを行う文字列
  */
-const trimText = (text: string): string =>
-  text.replace(/\t/g, "").replace(/ /g, "").replace(/\r?\n/g, "");
+const trimText = (text: string): string => text.replace(/\s+/g, "");
